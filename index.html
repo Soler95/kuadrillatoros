@@ -54,14 +54,14 @@
 const URL_API = "https://script.google.com/macros/s/AKfycbxUHuuox2IMjxuFXH61xSXlQFMEGWxUhLNKQcpvWm2ghPcqqbeldcMXEM3mvHn_CJT8/exec";
 
 const datos = [
-  { dia: "7 de julio",  nombre: "Amaia", emoji: "🧁" },
-  { dia: "8 de julio",  nombre: "Naj",   emoji: "🍕" },
-  { dia: "9 de julio",  nombre: "Ander", emoji: "🥐" },
-  { dia: "10 de julio", nombre: "Izas",  emoji: "🧆" },
-  { dia: "11 de julio", nombre: "Miren", emoji: "🥗" },
-  { dia: "12 de julio", nombre: "Blanca",emoji: "🍱" },
-  { dia: "13 de julio", nombre: "Sora",  emoji: "🥪" },
-  { dia: "14 de julio", nombre: "Uxue",  emoji: "🎂" }
+  { dia: "7julio",  label: "7 de julio",  nombre: "Amaia", emoji: "🧁" },
+  { dia: "8julio",  label: "8 de julio",  nombre: "Naj",   emoji: "🍕" },
+  { dia: "9julio",  label: "9 de julio",  nombre: "Ander", emoji: "🥐" },
+  { dia: "10julio", label: "10 de julio", nombre: "Izas",  emoji: "🧆" },
+  { dia: "11julio", label: "11 de julio", nombre: "Miren", emoji: "🥗" },
+  { dia: "12julio", label: "12 de julio", nombre: "Blanca",emoji: "🍱" },
+  { dia: "13julio", label: "13 de julio", nombre: "Sora",  emoji: "🥪" },
+  { dia: "14julio", label: "14 de julio", nombre: "Uxue",  emoji: "🎂" }
 ];
 
 function render() {
@@ -71,14 +71,14 @@ function render() {
     const voto = localStorage.getItem("voto_" + i) || 0;
     let stars = "";
     for (let s = 1; s <= 5; s++) {
-      stars += `<span class="star ${s <= voto ? 'active' : ''}" onclick="vote(${i},${s})" title="${s} estrellas">★</span>`;
+      stars += `<span class="star ${s <= voto ? 'active' : ''}" onclick="vote(${i},${s})">★</span>`;
     }
     grid.innerHTML += `
       <div class="merienda-card" id="card_${i}">
         <div class="merienda-header">
           <span class="merienda-emoji">${d.emoji}</span>
           <div>
-            <div class="merienda-dia">${d.dia}</div>
+            <div class="merienda-dia">${d.label}</div>
             <div class="merienda-nombre">${d.nombre}</div>
           </div>
         </div>
@@ -106,16 +106,15 @@ function vote(i, value) {
   localStorage.setItem("voto_" + i, value);
   render();
 
-  const params = new URLSearchParams({
-    dia: datos[i].dia,
-    usuario: name.trim(),
-    tipo: "voto",
-    valor: value
-  });
+  const url = URL_API
+    + "?dia=" + encodeURIComponent(datos[i].dia)
+    + "&usuario=" + encodeURIComponent(name.trim())
+    + "&tipo=voto"
+    + "&valor=" + value;
 
-  fetch(URL_API + "?" + params.toString())
-    .then(() => { showToast("¡Voto enviado! ⭐"); load(); })
-    .catch(() => showToast("Error al enviar voto 😕"));
+  fetch(url)
+    .then(() => { showToast("¡Voto enviado! ⭐"); setTimeout(load, 800); })
+    .catch(() => showToast("Error al enviar 😕"));
 }
 
 function comment(i) {
@@ -127,18 +126,17 @@ function comment(i) {
   input.value = "";
   input.disabled = true;
 
-  const params = new URLSearchParams({
-    dia: datos[i].dia,
-    usuario: name.trim(),
-    tipo: "comentario",
-    valor: text
-  });
+  const url = URL_API
+    + "?dia=" + encodeURIComponent(datos[i].dia)
+    + "&usuario=" + encodeURIComponent(name.trim())
+    + "&tipo=comentario"
+    + "&valor=" + encodeURIComponent(text);
 
-  fetch(URL_API + "?" + params.toString())
+  fetch(url)
     .then(() => {
       showToast("¡Comentario enviado! 💬");
       input.disabled = false;
-      setTimeout(load, 600);
+      setTimeout(load, 800);
     })
     .catch(() => {
       input.disabled = false;
@@ -148,21 +146,16 @@ function comment(i) {
 
 async function load() {
   try {
-    const res  = await fetch(URL_API);
-    const text = await res.text();
-    console.log("Respuesta raw:", text);
-    const data = JSON.parse(text);
-    console.log("Datos:", data);
+    const res  = await fetch(URL_API + "?nocache=" + Date.now());
+    const data = await res.json();
 
     const comments = data.filter(x => x.tipo === "comentario");
     const votes    = data.filter(x => x.tipo === "voto");
-    console.log("Comentarios:", comments);
-    console.log("Votos:", votes);
 
     datos.forEach((d, i) => {
       const el = document.getElementById("list_" + i);
       if (!el) return;
-      const list = comments.filter(c => c.dia === d.dia);
+      const list = comments.filter(c => String(c.dia).trim() === d.dia);
       el.innerHTML = list.length
         ? list.map(c => `<div class="comment"><span class="comment-user">${c.usuario}</span> ${c.valor}</div>`).join("")
         : '<p class="no-comments">Sé el primero en comentar 👇</p>';
@@ -170,9 +163,10 @@ async function load() {
 
     let map = {};
     votes.forEach(v => {
-      if (!map[v.dia]) map[v.dia] = { sum: 0, count: 0 };
-      map[v.dia].sum   += Number(v.valor);
-      map[v.dia].count += 1;
+      const key = String(v.dia).trim();
+      if (!map[key]) map[key] = { sum: 0, count: 0 };
+      map[key].sum   += Number(v.valor);
+      map[key].count += 1;
     });
 
     datos.forEach((d, i) => {
@@ -187,23 +181,27 @@ async function load() {
       }
     });
 
-    let arr = Object.keys(map).map(d => ({
-      dia:    d,
-      nombre: datos.find(x => x.dia === d)?.nombre || "",
-      emoji:  datos.find(x => x.dia === d)?.emoji  || "🍽️",
-      avg:    map[d].sum / map[d].count,
-      count:  map[d].count
-    }));
+    let arr = Object.keys(map).map(key => {
+      const d = datos.find(x => x.dia === key);
+      return {
+        dia:    key,
+        label:  d?.label  || key,
+        nombre: d?.nombre || "",
+        emoji:  d?.emoji  || "🍽️",
+        avg:    map[key].sum / map[key].count,
+        count:  map[key].count
+      };
+    });
     arr.sort((a, b) => b.avg - a.avg);
 
     const medals = ["🥇", "🥈", "🥉"];
     document.getElementById("ranking").innerHTML = arr.length
       ? arr.map((x, idx) => `
           <div class="rank-item ${idx === 0 ? 'rank-first' : ''}">
-            <span class="rank-medal">${medals[idx] || `${idx+1}º`}</span>
+            <span class="rank-medal">${medals[idx] || (idx+1) + 'º'}</span>
             <span class="rank-emoji">${x.emoji}</span>
             <div class="rank-info">
-              <strong>${x.dia}</strong>
+              <strong>${x.label}</strong>
               <span>${x.nombre}</span>
             </div>
             <div class="rank-score">
