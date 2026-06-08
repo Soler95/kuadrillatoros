@@ -12,7 +12,7 @@
   <div class="header-inner">
     <div class="header-brand">
       <span class="header-bull">🐂</span>
-      <div>
+      <div class="header-text">
         <h1>Kuadrilla San Fermín 2026</h1>
         <p>Votaciones y comentarios en tiempo real</p>
       </div>
@@ -24,10 +24,21 @@
   </div>
 </header>
 
+<!-- HERO BANNER -->
+<div class="hero-banner">
+  <h2>🎉 San Fermín 2026</h2>
+  <p>8 días · 8 meriendas · 1 kuadrilla legendaria</p>
+  <div class="hero-dates">
+    <span class="hero-date-pill">📍 Iruña</span>
+    <span class="hero-date-pill">📅 7–14 julio</span>
+    <span class="hero-date-pill">👥 12 miembros</span>
+  </div>
+</div>
+
 <main class="container">
 
   <section class="card">
-    <div class="card-header">
+    <div class="card-header" data-emoji="🍽️">
       <h2>📅 Meriendas 7–14 julio</h2>
       <p>Vota la merienda de cada día y deja tu comentario</p>
     </div>
@@ -35,7 +46,7 @@
   </section>
 
   <section class="card">
-    <div class="card-header">
+    <div class="card-header" data-emoji="🏆">
       <h2>🏆 Ranking</h2>
       <p>Las mejores meriendas según la kuadrilla</p>
     </div>
@@ -47,26 +58,24 @@
 </main>
 
 <footer class="footer">
-  <p>🎉 ¡Gora San Fermín! · 7–14 julio 2026 · Iruña</p>
+  🎉 ¡Gora San Fermín! · 7–14 julio 2026 · Iruña 🐂
 </footer>
 
 <script>
-/* ── URLs ── */
 const URL_API = "https://script.google.com/macros/s/AKfycbxUHuuox2IMjxuFXH61xSXlQFMEGWxUhLNKQcpvWm2ghPcqqbeldcMXEM3mvHn_CJT8/exec";
 const URL_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSeQ-dslJmHhOe_JJH5Cu7Fhz1P_aHwtQAEKkZ3BIzKWqrAqM5q2f_AHhnSUMUB-Iz5Gx67BS4uOQ8Q/pub?gid=0&single=true&output=csv&nocache=";
 
 const datos = [
-  { dia: "7julio",  label: "7 de julio",  nombre: "TBC", emoji: "🧁" },
-  { dia: "8julio",  label: "8 de julio",  nombre: "TBC",   emoji: "🍕" },
-  { dia: "9julio",  label: "9 de julio",  nombre: "TBC", emoji: "🥐" },
-  { dia: "10julio", label: "10 de julio", nombre: "TBC",  emoji: "🧆" },
-  { dia: "11julio", label: "11 de julio", nombre: "TBC", emoji: "🥗" },
-  { dia: "12julio", label: "12 de julio", nombre: "TBC",emoji: "🍱" },
-  { dia: "13julio", label: "13 de julio", nombre: "TBC",  emoji: "🥪" },
-  { dia: "14julio", label: "14 de julio", nombre: "TBC",  emoji: "🎂" }
+  { dia: "7julio",  label: "7 de julio",  nombre: "Amaia", emoji: "🧁" },
+  { dia: "8julio",  label: "8 de julio",  nombre: "Naj",   emoji: "🍕" },
+  { dia: "9julio",  label: "9 de julio",  nombre: "Ander", emoji: "🥐" },
+  { dia: "10julio", label: "10 de julio", nombre: "Izas",  emoji: "🧆" },
+  { dia: "11julio", label: "11 de julio", nombre: "Miren", emoji: "🥗" },
+  { dia: "12julio", label: "12 de julio", nombre: "Blanca",emoji: "🍱" },
+  { dia: "13julio", label: "13 de julio", nombre: "Sora",  emoji: "🥪" },
+  { dia: "14julio", label: "14 de julio", nombre: "Uxue",  emoji: "🎂" }
 ];
 
-/* ── RENDER ── */
 function render() {
   const grid = document.getElementById("tabla");
   grid.innerHTML = "";
@@ -77,7 +86,7 @@ function render() {
       stars += `<span class="star ${s <= voto ? 'active' : ''}" onclick="vote(${i},${s})">★</span>`;
     }
     grid.innerHTML += `
-      <div class="merienda-card" id="card_${i}">
+      <div class="merienda-card" id="card_${i}" data-num="${i + 1}">
         <div class="merienda-header">
           <span class="merienda-emoji">${d.emoji}</span>
           <div>
@@ -99,7 +108,6 @@ function render() {
   });
 }
 
-/* ── VOTAR ── */
 function vote(i, value) {
   if (localStorage.getItem("voto_" + i)) {
     showToast("¡Ya has votado este día! 🗳️");
@@ -117,11 +125,10 @@ function vote(i, value) {
     + "&valor="   + value;
 
   fetch(url)
-    .then(() => { showToast("¡Voto enviado! ⭐"); setTimeout(load, 1000); })
+    .then(() => { showToast("¡Voto enviado! " + "⭐".repeat(value)); setTimeout(load, 1000); })
     .catch(() => showToast("Error al enviar 😕"));
 }
 
-/* ── COMENTAR ── */
 function comment(i) {
   const input = document.getElementById("input_" + i);
   const text = input.value.trim();
@@ -149,12 +156,10 @@ function comment(i) {
     });
 }
 
-/* ── CARGAR DATOS DESDE CSV ── */
 async function load() {
   try {
     const res  = await fetch(URL_CSV + Date.now());
     const text = await res.text();
-
     const lines = text.trim().split("\n").slice(1);
     const data  = lines
       .map(line => {
@@ -171,7 +176,6 @@ async function load() {
     const comments = data.filter(x => x.tipo === "comentario");
     const votes    = data.filter(x => x.tipo === "voto");
 
-    /* Mostrar comentarios */
     datos.forEach((d, i) => {
       const el = document.getElementById("list_" + i);
       if (!el) return;
@@ -181,7 +185,6 @@ async function load() {
         : '<p class="no-comments">Sé el primero en comentar 👇</p>';
     });
 
-    /* Calcular medias */
     let map = {};
     votes.forEach(v => {
       if (!map[v.dia]) map[v.dia] = { sum: 0, count: 0 };
@@ -195,13 +198,16 @@ async function load() {
       if (map[d.dia]) {
         const avg = (map[d.dia].sum / map[d.dia].count).toFixed(1);
         const n   = map[d.dia].count;
-        avgEl.innerHTML = `<span class="avg-score">⭐ ${avg}</span><span class="avg-count">${n} voto${n !== 1 ? 's' : ''}</span>`;
+        avgEl.innerHTML = `
+          <div class="avg-badge">
+            <span class="avg-score">⭐ ${avg}</span>
+            <span class="avg-count">${n} voto${n !== 1 ? 's' : ''}</span>
+          </div>`;
       } else {
         avgEl.innerHTML = `<span class="avg-none">Sin votos aún</span>`;
       }
     });
 
-    /* Ranking */
     let arr = Object.keys(map).map(key => {
       const d = datos.find(x => x.dia === key);
       return {
@@ -216,34 +222,36 @@ async function load() {
 
     const medals = ["🥇", "🥈", "🥉"];
     document.getElementById("ranking").innerHTML = arr.length
-      ? arr.map((x, idx) => `
-          <div class="rank-item ${idx === 0 ? 'rank-first' : ''}">
-            <span class="rank-medal">${medals[idx] || (idx+1) + 'º'}</span>
-            <span class="rank-emoji">${x.emoji}</span>
-            <div class="rank-info">
-              <strong>${x.label}</strong>
-              <span>${x.nombre}</span>
-            </div>
-            <div class="rank-score">
-              <span class="rank-avg">⭐ ${x.avg.toFixed(1)}</span>
-              <span class="rank-votes">${x.count} voto${x.count !== 1 ? 's' : ''}</span>
-            </div>
-          </div>`).join("")
+      ? arr.map((x, idx) => {
+          const stars = "★".repeat(Math.round(x.avg)) + "☆".repeat(5 - Math.round(x.avg));
+          return `
+            <div class="rank-item ${idx === 0 ? 'rank-first' : ''}">
+              <span class="rank-medal">${medals[idx] || (idx+1) + 'º'}</span>
+              <span class="rank-emoji">${x.emoji}</span>
+              <div class="rank-info">
+                <strong>${x.label}</strong>
+                <span>${x.nombre} · <span class="rank-stars">${stars}</span></span>
+              </div>
+              <div class="rank-score">
+                <span class="rank-avg">⭐ ${x.avg.toFixed(1)}</span>
+                <span class="rank-votes">${x.count} voto${x.count !== 1 ? 's' : ''}</span>
+              </div>
+            </div>`;
+        }).join("")
       : '<p class="loading">Aún no hay votos 🗳️</p>';
 
   } catch (e) {
-    console.error("Error cargando CSV:", e);
+    console.error("Error:", e);
   }
 }
 
-/* ── TOAST ── */
 function showToast(msg) {
   const t = document.createElement("div");
   t.className = "toast";
   t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => t.classList.add("show"), 10);
-  setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 300); }, 2500);
+  setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 300); }, 2800);
 }
 
 render();
