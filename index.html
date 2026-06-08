@@ -10,12 +10,11 @@
 
 <header>
   <h1>🐂 Cuadrilla de Toros de San Fermines</h1>
-  <p>Votación de meriendas + comentarios</p>
+  <p>Votación de meriendas + comentarios por día</p>
 </header>
 
 <div class="container">
 
-  <!-- CALENDARIO -->
   <div class="card">
     <h2>📅 Calendario de meriendas (6–14 julio)</h2>
 
@@ -25,7 +24,7 @@
           <th>Día</th>
           <th>Encargado</th>
           <th>⭐ Voto</th>
-          <th>Acción</th>
+          <th>Comentarios</th>
         </tr>
       </thead>
 
@@ -33,14 +32,9 @@
     </table>
   </div>
 
-  <!-- COMENTARIOS -->
   <div class="card">
-    <h2>💬 Comentarios de la cuadrilla</h2>
-
-    <textarea id="comentario" placeholder="Escribe tu comentario..."></textarea>
-    <button onclick="agregarComentario()">Enviar</button>
-
-    <div id="listaComentarios"></div>
+    <h2>🏆 Ranking de meriendas</h2>
+    <div id="ranking"></div>
   </div>
 
 </div>
@@ -58,7 +52,7 @@ const datos = [
   { dia: "14 de julio", nombre: "Lucas Sin Miedo" }
 ];
 
-// ---------- CALENDARIO ----------
+// ---------- TABLA ----------
 function cargarTabla() {
   const tabla = document.getElementById("tabla");
   tabla.innerHTML = "";
@@ -71,7 +65,11 @@ function cargarTabla() {
       estrellas += `<span onclick="votar(${i}, ${s})" class="star ${voto >= s ? 'active' : ''}">★</span>`;
     }
 
-    let bloqueado = localStorage.getItem("voto_" + i) ? "disabled" : "";
+    let comentarios = JSON.parse(localStorage.getItem("comentarios_" + i) || "[]");
+
+    let listaComentarios = comentarios.map(c => `
+      <div class="comentario">💬 ${c}</div>
+    `).join("");
 
     tabla.innerHTML += `
       <tr>
@@ -79,7 +77,12 @@ function cargarTabla() {
         <td>${d.nombre}</td>
         <td>${estrellas}</td>
         <td>
-          ${voto ? "✔ Votado" : "Selecciona estrellas"}
+          ${listaComentarios}
+
+          <div class="comment-box">
+            <input type="text" id="input_${i}" placeholder="Escribe comentario">
+            <button onclick="agregarComentario(${i})">+</button>
+          </div>
         </td>
       </tr>
     `;
@@ -87,37 +90,50 @@ function cargarTabla() {
 }
 
 function votar(id, valor) {
-  if (localStorage.getItem("voto_" + id)) return; // solo 1 voto
+  if (localStorage.getItem("voto_" + id)) return;
   localStorage.setItem("voto_" + id, valor);
   cargarTabla();
+  cargarRanking();
 }
 
-// ---------- COMENTARIOS ----------
-function agregarComentario() {
-  const input = document.getElementById("comentario");
+// ---------- COMENTARIOS POR DÍA ----------
+function agregarComentario(id) {
+  const input = document.getElementById("input_" + id);
   const texto = input.value.trim();
   if (!texto) return;
 
-  let comentarios = JSON.parse(localStorage.getItem("comentarios") || "[]");
+  let comentarios = JSON.parse(localStorage.getItem("comentarios_" + id) || "[]");
   comentarios.push(texto);
-  localStorage.setItem("comentarios", JSON.stringify(comentarios));
+
+  localStorage.setItem("comentarios_" + id, JSON.stringify(comentarios));
 
   input.value = "";
-  cargarComentarios();
+  cargarTabla();
 }
 
-function cargarComentarios() {
-  const lista = document.getElementById("listaComentarios");
-  let comentarios = JSON.parse(localStorage.getItem("comentarios") || "[]");
+// ---------- RANKING ----------
+function cargarRanking() {
+  let ranking = [];
 
-  lista.innerHTML = comentarios.map(c =>
-    `<div class="comentario">💬 ${c}</div>`
-  ).join("");
+  datos.forEach((d, i) => {
+    let voto = parseInt(localStorage.getItem("voto_" + i) || 0);
+    ranking.push({ dia: d.dia, nombre: d.nombre, voto });
+  });
+
+  ranking.sort((a, b) => b.voto - a.voto);
+
+  document.getElementById("ranking").innerHTML =
+    ranking.map(r => `
+      <div class="ranking-item">
+        <strong>${r.dia} - ${r.nombre}</strong>
+        <span>⭐ ${r.voto}</span>
+      </div>
+    `).join("");
 }
 
 // INIT
 cargarTabla();
-cargarComentarios();
+cargarRanking();
 </script>
 
 </body>
