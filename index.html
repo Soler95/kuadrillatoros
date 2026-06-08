@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Kuadrilla Toros 2026</title>
+  <title>Kuadrilla San Fermín 2026</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -10,7 +10,7 @@
 
 <header>
   <h1>🐂 Kuadrilla San Fermín 2026</h1>
-  <p>Votaciones reales + Google Sheets</p>
+  <p>Votaciones + comentarios en Google Sheets</p>
 
   <nav>
     <a href="index.html">Calendario</a>
@@ -45,24 +45,27 @@
 </div>
 
 <script>
-const GOOGLE_SCRIPT_URL = "TU_GOOGLE_SCRIPT_URL";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7dVbX1ZyXYZ7MWxPTaen2DLsWlTIllVhHnKZcF8QHUE8i-drAY6A5fHY2iZYrPg1P/exec";
 
 const datos = [
-  { dia: "7 de julio", nombre: "TBC" },
-  { dia: "8 de julio", nombre: "TBC" },
-  { dia: "9 de julio", nombre: "TBC" },
-  { dia: "10 de julio", nombre: "TBC" },
-  { dia: "11 de julio", nombre: "TBC" },
-  { dia: "12 de julio", nombre: "TBC" },
-  { dia: "13 de julio", nombre: "TBC" },
-  { dia: "14 de julio", nombre: "TBC" }
+  { dia: "7 de julio", nombre: "Amaia" },
+  { dia: "8 de julio", nombre: "Naj" },
+  { dia: "9 de julio", nombre: "Ander" },
+  { dia: "10 de julio", nombre: "Izas" },
+  { dia: "11 de julio", nombre: "Miren" },
+  { dia: "12 de julio", nombre: "Blanca" },
+  { dia: "13 de julio", nombre: "Sora" },
+  { dia: "14 de julio", nombre: "Uxue" }
 ];
 
 // ---------- ESTRELLAS ----------
-function estrellasHTML(i, actual) {
+function estrellas(i, actual) {
   let html = "";
   for (let s = 1; s <= 5; s++) {
-    html += `<span class="star ${s <= actual ? 'active' : ''}" onclick="votar(${i}, ${s})">★</span>`;
+    html += `
+      <span class="star ${s <= actual ? 'active' : ''}"
+            onclick="votar(${i}, ${s})">★</span>
+    `;
   }
   return html;
 }
@@ -86,12 +89,12 @@ function cargarTabla() {
       <tr>
         <td><strong>${d.dia}</strong></td>
         <td>${d.nombre}</td>
-        <td>${estrellasHTML(i, voto)}</td>
+        <td>${estrellas(i, voto)}</td>
         <td>
           ${lista}
 
           <div class="inputBox">
-            <input id="c_${i}" placeholder="Comentario">
+            <input id="c_${i}" placeholder="Comentario...">
             <button onclick="comentar(${i})">Enviar</button>
           </div>
         </td>
@@ -100,7 +103,7 @@ function cargarTabla() {
   });
 }
 
-// ---------- VOTAR (NOMBRE OBLIGATORIO + GOOGLE SHEETS) ----------
+// ---------- VOTAR ----------
 function votar(i, valor) {
 
   if (localStorage.getItem("voto_" + i)) {
@@ -115,11 +118,14 @@ function votar(i, valor) {
 
   fetch(GOOGLE_SCRIPT_URL, {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify({
       dia: datos[i].dia,
-      encargado: datos[i].nombre,
       usuario: nombre,
-      voto: valor
+      tipo: "voto",
+      valor: valor
     })
   });
 
@@ -130,18 +136,29 @@ function votar(i, valor) {
 // ---------- COMENTARIOS ----------
 function comentar(i) {
   const input = document.getElementById("c_" + i);
-  if (!input.value.trim()) return;
+  const texto = input.value.trim();
+  if (!texto) return;
 
-  let arr = JSON.parse(localStorage.getItem("comentarios_" + i) || "[]");
-  arr.push(input.value.trim());
+  let nombre = prompt("Tu nombre:");
+  if (!nombre) return;
 
-  localStorage.setItem("comentarios_" + i, JSON.stringify(arr));
+  fetch(GOOGLE_SCRIPT_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      dia: datos[i].dia,
+      usuario: nombre,
+      tipo: "comentario",
+      valor: texto
+    })
+  });
 
   input.value = "";
-  cargarTabla();
 }
 
-// ---------- RANKING ----------
+// ---------- RANKING LOCAL ----------
 function cargarRanking() {
   let r = [];
 
