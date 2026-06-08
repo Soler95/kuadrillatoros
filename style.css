@@ -1,6 +1,5 @@
 /* ============================================================
    KUADRILLA SAN FERMÍN 2026
-   Rojo y blanco · Festivo · Mobile-first
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
@@ -9,13 +8,12 @@
   --rojo:       #c0392b;
   --rojo-dark:  #962d22;
   --rojo-light: #e74c3c;
-  --rojo-dim:   rgba(192, 57, 43, 0.1);
+  --rojo-dim:   rgba(192,57,43,0.1);
   --blanco:     #ffffff;
   --crema:      #fdf6f0;
   --gris:       #f4f4f4;
   --tinta:      #2c2c2c;
   --tinta-soft: #666;
-  --verde:      #27ae60;
   --amarillo:   #f39c12;
   --radio:      12px;
   --sombra:     0 4px 20px rgba(0,0,0,0.08);
@@ -23,7 +21,6 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
 html { scroll-behavior: smooth; font-size: 16px; }
 
 body {
@@ -39,7 +36,6 @@ body {
 .header {
   background: var(--rojo);
   color: var(--blanco);
-  padding: 0;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -57,11 +53,7 @@ body {
   gap: 0.75rem;
 }
 
-.header-brand {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
+.header-brand { display: flex; align-items: center; gap: 0.75rem; }
 
 .header-bull {
   font-size: 2rem;
@@ -70,27 +62,14 @@ body {
 
 @keyframes wobble {
   0%, 100% { transform: rotate(0); }
-  25% { transform: rotate(-8deg); }
-  75% { transform: rotate(8deg); }
+  25%       { transform: rotate(-8deg); }
+  75%       { transform: rotate(8deg); }
 }
 
-.header h1 {
-  font-size: clamp(1rem, 4vw, 1.3rem);
-  font-weight: 800;
-  line-height: 1.2;
-}
+.header h1 { font-size: clamp(1rem, 4vw, 1.3rem); font-weight: 800; line-height: 1.2; }
+.header p  { font-size: 0.75rem; opacity: 0.85; }
 
-.header p {
-  font-size: 0.75rem;
-  opacity: 0.85;
-  font-weight: 400;
-}
-
-/* ── NAV ── */
-.nav {
-  display: flex;
-  gap: 0.5rem;
-}
+.nav { display: flex; gap: 0.5rem; }
 
 .nav-link {
   color: var(--blanco);
@@ -130,21 +109,13 @@ body {
 }
 
 .card-header {
-  background: linear-gradient(135deg, var(--rojo) 0%, var(--rojo-light) 100%);
+  background: linear-gradient(135deg, var(--rojo), var(--rojo-light));
   color: var(--blanco);
   padding: 1.5rem 2rem;
 }
 
-.card-header h2 {
-  font-size: clamp(1.1rem, 3vw, 1.4rem);
-  font-weight: 800;
-  margin-bottom: 0.25rem;
-}
-
-.card-header p {
-  font-size: 0.85rem;
-  opacity: 0.9;
-}
+.card-header h2 { font-size: clamp(1.1rem, 3vw, 1.4rem); font-weight: 800; margin-bottom: 0.25rem; }
+.card-header p  { font-size: 0.85rem; opacity: 0.9; }
 
 /* ── MERIENDAS GRID ── */
 .meriendas-grid {
@@ -170,32 +141,12 @@ body {
   margin-bottom: 0.75rem;
 }
 
-.merienda-emoji {
-  font-size: 2rem;
-  flex-shrink: 0;
-}
-
-.merienda-dia {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--rojo);
-}
-
-.merienda-nombre {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--tinta);
-  line-height: 1.2;
-}
+.merienda-emoji  { font-size: 2rem; flex-shrink: 0; }
+.merienda-dia    { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--rojo); }
+.merienda-nombre { font-size: 1.1rem; font-weight: 800; color: var(--tinta); line-height: 1.2; }
 
 /* ── ESTRELLAS ── */
-.stars-row {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 0.5rem;
-}
+.stars-row { display: flex; gap: 4px; margin-bottom: 0.5rem; }
 
 .star {
   font-size: 1.6rem;
@@ -208,8 +159,7 @@ body {
 
 .star:hover,
 .star.active { color: var(--amarillo); }
-
-.star:hover { transform: scale(1.2); }
+.star:hover  { transform: scale(1.2); }
 
 /* ── AVERAGE ── */
 .avg-display {
@@ -220,27 +170,12 @@ body {
   min-height: 1.4rem;
 }
 
-.avg-score {
-  font-size: 0.9rem;
-  font-weight: 800;
-  color: var(--amarillo);
-}
-
-.avg-count {
-  font-size: 0.75rem;
-  color: var(--tinta-soft);
-}
-
-.avg-none {
-  font-size: 0.75rem;
-  color: #bbb;
-}
+.avg-score  { font-size: 0.9rem; font-weight: 800; color: var(--amarillo); }
+.avg-count  { font-size: 0.75rem; color: var(--tinta-soft); }
+.avg-none   { font-size: 0.75rem; color: #bbb; }
 
 /* ── COMENTARIOS ── */
-.comment-section {
-  border-top: 1px solid var(--gris);
-  padding-top: 0.75rem;
-}
+.comment-section { border-top: 1px solid var(--gris); padding-top: 0.75rem; }
 
 .comments-list {
   max-height: 140px;
@@ -259,23 +194,10 @@ body {
   line-height: 1.4;
 }
 
-.comment-user {
-  font-weight: 700;
-  color: var(--rojo);
-  margin-right: 0.35rem;
-}
+.comment-user { font-weight: 700; color: var(--rojo); margin-right: 0.35rem; }
+.no-comments  { font-size: 0.8rem; color: #bbb; text-align: center; padding: 0.5rem; }
 
-.no-comments {
-  font-size: 0.8rem;
-  color: #bbb;
-  text-align: center;
-  padding: 0.5rem;
-}
-
-.comment-input {
-  display: flex;
-  gap: 0.5rem;
-}
+.comment-input { display: flex; gap: 0.5rem; }
 
 .comment-input input {
   flex: 1;
@@ -304,11 +226,7 @@ body {
   transition: background 0.2s, transform 0.15s;
 }
 
-.comment-input button:hover {
-  background: var(--rojo-dark);
-  transform: scale(1.03);
-}
-
+.comment-input button:hover  { background: var(--rojo-dark); transform: scale(1.03); }
 .comment-input button:active { transform: scale(0.97); }
 
 /* ── RANKING ── */
@@ -329,65 +247,26 @@ body {
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.rank-item:hover {
-  transform: translateX(4px);
-  box-shadow: var(--sombra);
-}
+.rank-item:hover { transform: translateX(4px); box-shadow: var(--sombra); }
 
 .rank-first {
   background: linear-gradient(135deg, #fff9e6, #fff3cc);
   border: 2px solid var(--amarillo);
 }
 
-.rank-medal {
-  font-size: 1.5rem;
-  min-width: 2rem;
-  text-align: center;
-}
-
+.rank-medal { font-size: 1.5rem; min-width: 2rem; text-align: center; }
 .rank-emoji { font-size: 1.5rem; }
 
-.rank-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
+.rank-info { flex: 1; display: flex; flex-direction: column; }
+.rank-info strong { font-size: 0.95rem; font-weight: 800; }
+.rank-info span   { font-size: 0.8rem; color: var(--tinta-soft); }
 
-.rank-info strong {
-  font-size: 0.95rem;
-  font-weight: 800;
-}
-
-.rank-info span {
-  font-size: 0.8rem;
-  color: var(--tinta-soft);
-}
-
-.rank-score {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-}
-
-.rank-avg {
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--amarillo);
-}
-
-.rank-votes {
-  font-size: 0.72rem;
-  color: var(--tinta-soft);
-}
+.rank-score { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.rank-avg   { font-size: 1rem; font-weight: 800; color: var(--amarillo); }
+.rank-votes { font-size: 0.72rem; color: var(--tinta-soft); }
 
 /* ── LOADING ── */
-.loading {
-  text-align: center;
-  color: var(--tinta-soft);
-  padding: 2rem;
-  font-size: 0.9rem;
-}
+.loading { text-align: center; color: var(--tinta-soft); padding: 2rem; font-size: 0.9rem; }
 
 /* ── TOAST ── */
 .toast {
@@ -409,10 +288,7 @@ body {
   box-shadow: var(--sombra-lg);
 }
 
-.toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 /* ── FOOTER ── */
 .footer {
@@ -427,9 +303,9 @@ body {
 
 /* ── RESPONSIVE ── */
 @media (max-width: 600px) {
-  .container { padding: 1rem; gap: 1rem; }
-  .card-header { padding: 1.25rem; }
+  .container      { padding: 1rem; gap: 1rem; }
+  .card-header    { padding: 1.25rem; }
   .meriendas-grid { grid-template-columns: 1fr; }
-  .rank-item { gap: 0.75rem; padding: 0.85rem; }
-  .nav-link { font-size: 0.75rem; padding: 0.4rem 0.75rem; }
+  .rank-item      { gap: 0.75rem; padding: 0.85rem; }
+  .nav-link       { font-size: 0.75rem; padding: 0.4rem 0.75rem; }
 }
