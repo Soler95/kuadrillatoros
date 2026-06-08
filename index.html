@@ -126,10 +126,6 @@ function actualizarEstrellas(i) {
 
 /* ── VOTAR ── */
 function vote(i, value) {
-  if (localStorage.getItem("voto_" + i)) {
-    showToast("¡Ya has votado este día! 🗳️");
-    return;
-  }
   const name = prompt("¿Cómo te llamas?");
   if (!name || !name.trim()) return;
   localStorage.setItem("voto_" + i, value);
