@@ -22,7 +22,6 @@
 
   <div class="card">
     <h2>📅 Meriendas (7–14 julio)</h2>
-
     <table>
       <thead>
         <tr>
@@ -32,20 +31,19 @@
           <th>Comentarios</th>
         </tr>
       </thead>
-
       <tbody id="tabla"></tbody>
     </table>
   </div>
 
   <div class="card">
     <h2>🏆 Ranking</h2>
-    <div id="ranking"></div>
+    <div id="ranking">Cargando...</div>
   </div>
 
 </div>
 
 <script>
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7dVbX1ZyXYZ7MWxPTaen2DLsWlTIllVhHnKZcF8QHUE8i-drAY6A5fHY2iZYrPg1P/exec";
+const URL = "https://script.google.com/macros/s/AKfycbxoT7_CVuZyGUeawlPv5dyfdFqnDrzuNhY-wc8lLYbstfkHcMxlMBsOCn20qIp9lpmHXw/exec";
 
 const datos = [
   { dia: "7 de julio", nombre: "Amaia" },
@@ -58,13 +56,16 @@ const datos = [
   { dia: "14 de julio", nombre: "Uxue" }
 ];
 
-// ---------- ESTRELLAS ----------
-function stars(i, actual) {
-  let html = "";
-  for (let s = 1; s <= 5; s++) {
-    html += `<span class="star ${s <= actual ? 'active' : ''}" onclick="vote(${i}, ${s})">★</span>`;
+// ---------- SAFE FETCH ----------
+async function getData() {
+  try {
+    const res = await fetch(URL);
+    const text = await res.text();
+    return JSON.parse(text);
+  } catch (e) {
+    console.error("Error leyendo Google Sheets:", e);
+    return [];
   }
-  return html;
 }
 
 // ---------- TABLA ----------
@@ -73,17 +74,22 @@ function renderTable() {
   tbody.innerHTML = "";
 
   datos.forEach((d, i) => {
-    const voto = parseInt(localStorage.getItem("voto_" + i) || 0);
+    const voto = localStorage.getItem("voto_" + i) || 0;
 
     tbody.innerHTML += `
       <tr>
-        <td><strong>${d.dia}</strong></td>
+        <td><b>${d.dia}</b></td>
         <td>${d.nombre}</td>
-        <td>${stars(i, voto)}</td>
-        <td class="comments" id="comments_${i}">
-          Cargando comentarios...
+        <td>
+          ${[1,2,3,4,5].map(s => `
+            <span class="star ${s <= voto ? 'active' : ''}"
+            onclick="vote(${i}, ${s})">★</span>
+          `).join("")}
+        </td>
+        <td id="comments_${i}">
+          Cargando...
           <div class="inputBox">
-            <input id="input_${i}" placeholder="Comentario...">
+            <input id="input_${i}" placeholder="Comentario">
             <button onclick="comment(${i})">Enviar</button>
           </div>
         </td>
@@ -92,11 +98,11 @@ function renderTable() {
   });
 }
 
-// ---------- VOTAR ----------
+// ---------- VOTE ----------
 function vote(i, value) {
 
   if (localStorage.getItem("voto_" + i)) {
-    alert("Ya has votado este día");
+    alert("Ya votaste este día");
     return;
   }
 
@@ -105,22 +111,19 @@ function vote(i, value) {
 
   localStorage.setItem("voto_" + i, value);
 
-  fetch(GOOGLE_SCRIPT_URL, {
+  fetch(URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {"Content-Type": "application/json"},
     body: JSON.stringify({
       dia: datos[i].dia,
       usuario: name,
       tipo: "voto",
       valor: value
     })
-  });
-
-  loadRanking();
-  renderTable();
+  }).then(() => loadAll());
 }
 
-// ---------- COMENTARIOS ----------
+// ---------- COMMENT ----------
 function comment(i) {
   const input = document.getElementById("input_" + i);
   const text = input.value.trim();
@@ -129,75 +132,69 @@ function comment(i) {
   const name = prompt("Tu nombre:");
   if (!name) return;
 
-  fetch(GOOGLE_SCRIPT_URL, {
+  fetch(URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {"Content-Type": "application/json"},
     body: JSON.stringify({
       dia: datos[i].dia,
       usuario: name,
       tipo: "comentario",
       valor: text
     })
+  }).then(() => {
+    input.value = "";
+    loadAll();
   });
-
-  input.value = "";
-
-  setTimeout(loadComments, 800);
 }
 
-// ---------- CARGAR COMENTARIOS GLOBALS ----------
-async function loadComments() {
-  const res = await fetch(GOOGLE_SCRIPT_URL);
-  const data = await res.json();
+// ---------- LOAD COMMENTS + RANKING ----------
+async function loadAll() {
+
+  const data = await getData();
 
   const comments = data.filter(x => x.tipo === "comentario");
+  const votes = data.filter(x => x.tipo === "voto");
 
+  // COMMENTS
   datos.forEach((d, i) => {
-    const el = document.getElementById("comments_" + i);
 
+    const el = document.getElementById("comments_" + i);
     if (!el) return;
 
     const list = comments
       .filter(c => c.dia === d.dia)
-      .map(c => `<div class="comment">💬 <b>${c.usuario}</b>: ${c.valor}</div>`)
+      .map(c => `<div class="comment">💬 ${c.usuario}: ${c.valor}</div>`)
       .join("");
 
     el.innerHTML = `
       ${list || "<div class='empty'>Sin comentarios</div>"}
       <div class="inputBox">
-        <input id="input_${i}" placeholder="Comentario...">
+        <input id="input_${i}" placeholder="Comentario">
         <button onclick="comment(${i})">Enviar</button>
       </div>
     `;
   });
-}
 
-// ---------- RANKING ----------
-async function loadRanking() {
-  const res = await fetch(GOOGLE_SCRIPT_URL);
-  const data = await res.json();
-
-  const votes = data.filter(x => x.tipo === "voto");
-
-  let ranking = {};
+  // RANKING
+  let map = {};
 
   votes.forEach(v => {
-    if (!ranking[v.dia]) ranking[v.dia] = { total: 0, count: 0, nombre: "" };
-    ranking[v.dia].total += Number(v.valor);
-    ranking[v.dia].count++;
+    if (!map[v.dia]) map[v.dia] = { sum: 0, count: 0 };
+    map[v.dia].sum += Number(v.valor);
+    map[v.dia].count++;
   });
 
-  let arr = Object.keys(ranking).map(dia => ({
-    dia,
-    avg: ranking[dia].total / ranking[dia].count
+  let arr = Object.keys(map).map(d => ({
+    dia: d,
+    avg: map[d].sum / map[d].count
   }));
 
-  arr.sort((a, b) => b.avg - a.avg);
+  arr.sort((a,b) => b.avg - a.avg);
 
   document.getElementById("ranking").innerHTML =
     arr.map(x => `
       <div class="rank">
-        <strong>${x.dia}</strong>
+        <b>${x.dia}</b>
         <span>⭐ ${x.avg.toFixed(1)}</span>
       </div>
     `).join("");
@@ -205,13 +202,8 @@ async function loadRanking() {
 
 // INIT
 renderTable();
-loadComments();
-loadRanking();
-
-setInterval(() => {
-  loadComments();
-  loadRanking();
-}, 5000);
+loadAll();
+setInterval(loadAll, 5000);
 </script>
 
 </body>
