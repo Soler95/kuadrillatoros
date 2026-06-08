@@ -37,13 +37,13 @@
 
   <div class="card">
     <h2>🏆 Ranking</h2>
-    <div id="ranking">Cargando...</div>
+    <div id="ranking"></div>
   </div>
 
 </div>
 
 <script>
-const URL = "https://script.google.com/macros/s/AKfycbxoT7_CVuZyGUeawlPv5dyfdFqnDrzuNhY-wc8lLYbstfkHcMxlMBsOCn20qIp9lpmHXw/exec";
+const URL = "https://script.google.com/macros/s/AKfycbwCf1bIr4MgpjOjh5ApWImKeH4XOpVQcLaEXvfR4a1U9nPgIwp83HpMeNgZsoR_5Z7lRg/exec";
 
 const datos = [
   { dia: "7 de julio", nombre: "Amaia" },
@@ -56,53 +56,40 @@ const datos = [
   { dia: "14 de julio", nombre: "Uxue" }
 ];
 
-// ---------- SAFE FETCH ----------
-async function getData() {
-  try {
-    const res = await fetch(URL);
-    const text = await res.text();
-    return JSON.parse(text);
-  } catch (e) {
-    console.error("Error leyendo Google Sheets:", e);
-    return [];
-  }
-}
-
-// ---------- TABLA ----------
-function renderTable() {
+// ---------- RENDER ----------
+function render() {
   const tbody = document.getElementById("tabla");
   tbody.innerHTML = "";
 
   datos.forEach((d, i) => {
+
     const voto = localStorage.getItem("voto_" + i) || 0;
+
+    let stars = "";
+    for (let s = 1; s <= 5; s++) {
+      stars += `<span class="star ${s <= voto ? 'active' : ''}" onclick="vote(${i},${s})">★</span>`;
+    }
 
     tbody.innerHTML += `
       <tr>
         <td><b>${d.dia}</b></td>
         <td>${d.nombre}</td>
-        <td>
-          ${[1,2,3,4,5].map(s => `
-            <span class="star ${s <= voto ? 'active' : ''}"
-            onclick="vote(${i}, ${s})">★</span>
-          `).join("")}
-        </td>
-        <td id="comments_${i}">
-          Cargando...
-          <div class="inputBox">
-            <input id="input_${i}" placeholder="Comentario">
-            <button onclick="comment(${i})">Enviar</button>
-          </div>
+        <td>${stars}</td>
+        <td id="c_${i}">
+          <input id="input_${i}" placeholder="Comentario">
+          <button onclick="comment(${i})">Enviar</button>
+          <div id="list_${i}"></div>
         </td>
       </tr>
     `;
   });
 }
 
-// ---------- VOTE ----------
+// ---------- VOTAR ----------
 function vote(i, value) {
 
   if (localStorage.getItem("voto_" + i)) {
-    alert("Ya votaste este día");
+    alert("Ya has votado este día");
     return;
   }
 
@@ -120,11 +107,14 @@ function vote(i, value) {
       tipo: "voto",
       valor: value
     })
-  }).then(() => loadAll());
+  });
+
+  load();
 }
 
-// ---------- COMMENT ----------
+// ---------- COMENTAR ----------
 function comment(i) {
+
   const input = document.getElementById("input_" + i);
   const text = input.value.trim();
   if (!text) return;
@@ -141,69 +131,67 @@ function comment(i) {
       tipo: "comentario",
       valor: text
     })
-  }).then(() => {
-    input.value = "";
-    loadAll();
   });
+
+  input.value = "";
+  setTimeout(load, 800);
 }
 
-// ---------- LOAD COMMENTS + RANKING ----------
-async function loadAll() {
+// ---------- CARGAR DATOS ----------
+async function load() {
 
-  const data = await getData();
+  try {
+    const res = await fetch(URL);
+    const data = await res.json();
 
-  const comments = data.filter(x => x.tipo === "comentario");
-  const votes = data.filter(x => x.tipo === "voto");
+    const comments = data.filter(x => x.tipo === "comentario");
+    const votes = data.filter(x => x.tipo === "voto");
 
-  // COMMENTS
-  datos.forEach((d, i) => {
+    // COMMENTS
+    datos.forEach((d, i) => {
+      const el = document.getElementById("list_" + i);
+      if (!el) return;
 
-    const el = document.getElementById("comments_" + i);
-    if (!el) return;
+      el.innerHTML = comments
+        .filter(c => c.dia === d.dia)
+        .map(c => `<div class="comment">💬 <b>${c.usuario}</b>: ${c.valor}</div>`)
+        .join("");
+    });
 
-    const list = comments
-      .filter(c => c.dia === d.dia)
-      .map(c => `<div class="comment">💬 ${c.usuario}: ${c.valor}</div>`)
-      .join("");
+    // RANKING
+    let map = {};
 
-    el.innerHTML = `
-      ${list || "<div class='empty'>Sin comentarios</div>"}
-      <div class="inputBox">
-        <input id="input_${i}" placeholder="Comentario">
-        <button onclick="comment(${i})">Enviar</button>
-      </div>
-    `;
-  });
+    votes.forEach(v => {
+      if (!map[v.dia]) map[v.dia] = {sum:0,count:0};
+      map[v.dia].sum += Number(v.valor);
+      map[v.dia].count++;
+    });
 
-  // RANKING
-  let map = {};
+    let arr = Object.keys(map).map(d => ({
+      dia: d,
+      avg: map[d].sum / map[d].count
+    }));
 
-  votes.forEach(v => {
-    if (!map[v.dia]) map[v.dia] = { sum: 0, count: 0 };
-    map[v.dia].sum += Number(v.valor);
-    map[v.dia].count++;
-  });
+    arr.sort((a,b)=>b.avg-a.avg);
 
-  let arr = Object.keys(map).map(d => ({
-    dia: d,
-    avg: map[d].sum / map[d].count
-  }));
+    document.getElementById("ranking").innerHTML =
+      arr.map(x => `
+        <div class="rank">
+          <b>${x.dia}</b>
+          <span>⭐ ${x.avg.toFixed(1)}</span>
+        </div>
+      `).join("");
 
-  arr.sort((a,b) => b.avg - a.avg);
-
-  document.getElementById("ranking").innerHTML =
-    arr.map(x => `
-      <div class="rank">
-        <b>${x.dia}</b>
-        <span>⭐ ${x.avg.toFixed(1)}</span>
-      </div>
-    `).join("");
+  } catch (e) {
+    console.error("Error cargando datos", e);
+  }
 }
 
 // INIT
-renderTable();
-loadAll();
-setInterval(loadAll, 5000);
+render();
+load();
+setInterval(load, 5000);
+
 </script>
 
 </body>
