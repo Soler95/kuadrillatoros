@@ -255,7 +255,9 @@ async function load() {
         }).join("")
       : '<p class="loading">Aún no hay votos 🗳️</p>';
 
-    if (rankingEl.innerHTML !== nuevoRanking) rankingEl.innerHTML = nuevoRanking;
+  if (arr.length > 0 && rankingEl.innerHTML !== nuevoRanking) {
+  rankingEl.innerHTML = nuevoRanking;
+}
 
   } catch (e) {
     console.error("Error:", e);
