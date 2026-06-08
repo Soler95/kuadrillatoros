@@ -107,49 +107,50 @@ function vote(i, value) {
     showToast("¡Ya has votado este día! 🗳️");
     return;
   }
-
   const name = prompt("¿Cómo te llamas?");
   if (!name || !name.trim()) return;
-
   localStorage.setItem("voto_" + i, value);
   render();
 
-  fetch(URL_API, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ dia: datos[i].dia, usuario: name.trim(), tipo: "voto", valor: value })
-  }).then(() => {
-    showToast("¡Voto enviado! ⭐".repeat(value).substring(0, 20));
-    load();
-  }).catch(() => showToast("Error al enviar voto 😕"));
+  const params = new URLSearchParams({
+    dia: datos[i].dia,
+    usuario: name.trim(),
+    tipo: "voto",
+    valor: value
+  });
+
+  fetch(URL_API + "?" + params.toString())
+    .then(() => { showToast("¡Voto enviado! ⭐"); load(); })
+    .catch(() => showToast("Error al enviar voto 😕"));
 }
 
-/* ── COMENTAR ── */
 function comment(i) {
   const input = document.getElementById("input_" + i);
   const text = input.value.trim();
   if (!text) return;
-
   const name = prompt("¿Cómo te llamas?");
   if (!name || !name.trim()) return;
-
   input.value = "";
   input.disabled = true;
 
-  fetch(URL_API, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ dia: datos[i].dia, usuario: name.trim(), tipo: "comentario", valor: text })
-  }).then(() => {
-    showToast("¡Comentario enviado! 💬");
-    input.disabled = false;
-    setTimeout(load, 600);
-  }).catch(() => {
-    input.disabled = false;
-    showToast("Error al enviar 😕");
+  const params = new URLSearchParams({
+    dia: datos[i].dia,
+    usuario: name.trim(),
+    tipo: "comentario",
+    valor: text
   });
-}
 
+  fetch(URL_API + "?" + params.toString())
+    .then(() => {
+      showToast("¡Comentario enviado! 💬");
+      input.disabled = false;
+      setTimeout(load, 600);
+    })
+    .catch(() => {
+      input.disabled = false;
+      showToast("Error al enviar 😕");
+    });
+}
 /* ── CARGAR DATOS ── */
 async function load() {
   try {
