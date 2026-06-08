@@ -1,7 +1,7 @@
 body {
   font-family: Arial, sans-serif;
   margin: 0;
-  background: #f4f4f4;
+  background: #f3f3f3;
 }
 
 header {
@@ -12,9 +12,9 @@ header {
 }
 
 .container {
-  padding: 20px;
-  max-width: 1000px;
+  max-width: 1100px;
   margin: auto;
+  padding: 20px;
 }
 
 .card {
@@ -25,6 +25,7 @@ header {
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
+/* TABLA */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -37,7 +38,7 @@ th {
 }
 
 td {
-  text-align: center;
+  vertical-align: top;
   padding: 10px;
   border-bottom: 1px solid #ddd;
 }
@@ -47,7 +48,6 @@ td {
   font-size: 22px;
   cursor: pointer;
   color: #ccc;
-  transition: 0.2s;
 }
 
 .star:hover {
@@ -59,30 +59,37 @@ td {
 }
 
 /* COMENTARIOS */
-textarea {
-  width: 100%;
-  height: 80px;
-  padding: 10px;
-  margin-bottom: 10px;
-  resize: none;
+.comment-box {
+  display: flex;
+  margin-top: 8px;
 }
 
-button {
+.comment-box input {
+  flex: 1;
+  padding: 5px;
+}
+
+.comment-box button {
+  padding: 5px 10px;
   background: red;
   color: white;
   border: none;
-  padding: 10px 15px;
   cursor: pointer;
-  border-radius: 6px;
-}
-
-button:hover {
-  background: darkred;
 }
 
 .comentario {
   background: #eee;
-  padding: 8px;
-  margin-top: 8px;
+  padding: 5px;
+  margin-top: 5px;
   border-radius: 6px;
+}
+
+/* RANKING */
+.ranking-item {
+  background: #f1f1f1;
+  padding: 10px;
+  margin-top: 8px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
 }
