@@ -26,7 +26,6 @@
 
 <main class="container">
 
-  <!-- TABLA DE MERIENDAS -->
   <section class="card">
     <div class="card-header">
       <h2>📅 Meriendas 7–14 julio</h2>
@@ -35,7 +34,6 @@
     <div id="tabla" class="meriendas-grid"></div>
   </section>
 
-  <!-- RANKING -->
   <section class="card">
     <div class="card-header">
       <h2>🏆 Ranking</h2>
@@ -53,7 +51,7 @@
 </footer>
 
 <script>
-const URL_API = "https://script.google.com/macros/s/AKfycbyCG4i1ZTQ3lTVc5BDJiymQZ36tOZ0Yj2PQKahUmzY7Q9kXPXB2HDHRc8NrkRGY0jwP/exec";
+const URL_API = "https://script.google.com/macros/s/AKfycbxUHuuox2IMjxuFXH61xSXlQFMEGWxUhLNKQcpvWm2ghPcqqbeldcMXEM3mvHn_CJT8/exec";
 
 const datos = [
   { dia: "7 de julio",  nombre: "Amaia", emoji: "🧁" },
@@ -66,18 +64,15 @@ const datos = [
   { dia: "14 de julio", nombre: "Uxue",  emoji: "🎂" }
 ];
 
-/* ── RENDER TARJETAS ── */
 function render() {
   const grid = document.getElementById("tabla");
   grid.innerHTML = "";
-
   datos.forEach((d, i) => {
     const voto = localStorage.getItem("voto_" + i) || 0;
     let stars = "";
     for (let s = 1; s <= 5; s++) {
       stars += `<span class="star ${s <= voto ? 'active' : ''}" onclick="vote(${i},${s})" title="${s} estrellas">★</span>`;
     }
-
     grid.innerHTML += `
       <div class="merienda-card" id="card_${i}">
         <div class="merienda-header">
@@ -101,7 +96,6 @@ function render() {
   });
 }
 
-/* ── VOTAR ── */
 function vote(i, value) {
   if (localStorage.getItem("voto_" + i)) {
     showToast("¡Ya has votado este día! 🗳️");
@@ -151,16 +145,14 @@ function comment(i) {
       showToast("Error al enviar 😕");
     });
 }
-/* ── CARGAR DATOS ── */
+
 async function load() {
   try {
     const res  = await fetch(URL_API);
     const data = await res.json();
-
     const comments = data.filter(x => x.tipo === "comentario");
     const votes    = data.filter(x => x.tipo === "voto");
 
-    /* Comentarios */
     datos.forEach((d, i) => {
       const el = document.getElementById("list_" + i);
       if (!el) return;
@@ -170,7 +162,6 @@ async function load() {
         : '<p class="no-comments">Sé el primero en comentar 👇</p>';
     });
 
-    /* Medias por día */
     let map = {};
     votes.forEach(v => {
       if (!map[v.dia]) map[v.dia] = { sum: 0, count: 0 };
@@ -190,9 +181,8 @@ async function load() {
       }
     });
 
-    /* Ranking */
     let arr = Object.keys(map).map(d => ({
-      dia: d,
+      dia:    d,
       nombre: datos.find(x => x.dia === d)?.nombre || "",
       emoji:  datos.find(x => x.dia === d)?.emoji  || "🍽️",
       avg:    map[d].sum / map[d].count,
@@ -214,8 +204,7 @@ async function load() {
               <span class="rank-avg">⭐ ${x.avg.toFixed(1)}</span>
               <span class="rank-votes">${x.count} voto${x.count !== 1 ? 's' : ''}</span>
             </div>
-          </div>
-        `).join("")
+          </div>`).join("")
       : '<p class="loading">Aún no hay votos 🗳️</p>';
 
   } catch (e) {
@@ -223,7 +212,6 @@ async function load() {
   }
 }
 
-/* ── TOAST ── */
 function showToast(msg) {
   const t = document.createElement("div");
   t.className = "toast";
@@ -233,7 +221,6 @@ function showToast(msg) {
   setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 300); }, 2500);
 }
 
-/* ── INIT ── */
 render();
 load();
 setInterval(load, 5000);
