@@ -2,28 +2,34 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Cuadrilla de Toros - San Fermines</title>
+  <title>Cuadrilla de San Fermines</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <header>
-  <h1>🐂 Cuadrilla de Toros de San Fermines</h1>
-  <p>Votación de meriendas + comentarios por día</p>
+  <h1>🐂 Cuadrilla de San Fermines</h1>
+  <p>Calendario de meriendas + ranking</p>
+
+  <nav>
+    <a href="index.html">Calendario</a>
+    <a href="kuadrilla.html">Miembros</a>
+  </nav>
 </header>
 
 <div class="container">
 
+  <!-- CALENDARIO -->
   <div class="card">
-    <h2>📅 Calendario de meriendas (6–14 julio)</h2>
+    <h2>📅 Meriendas (desde el 7 de julio)</h2>
 
     <table>
       <thead>
         <tr>
           <th>Día</th>
           <th>Encargado</th>
-          <th>⭐ Voto</th>
+          <th>⭐ Votos</th>
           <th>Comentarios</th>
         </tr>
       </thead>
@@ -32,8 +38,9 @@
     </table>
   </div>
 
+  <!-- RANKING -->
   <div class="card">
-    <h2>🏆 Ranking de meriendas</h2>
+    <h2>🏆 Ranking</h2>
     <div id="ranking"></div>
   </div>
 
@@ -41,15 +48,17 @@
 
 <script>
 const datos = [
-  { dia: "6 de julio", nombre: "Juan El Rápido" },
-  { dia: "7 de julio", nombre: "Miguel Valentía" },
-  { dia: "8 de julio", nombre: "Ander Toro Humano" },
-  { dia: "9 de julio", nombre: "Lucas Sin Miedo" },
-  { dia: "10 de julio", nombre: "Iker Sprint" },
-  { dia: "11 de julio", nombre: "Juan El Rápido" },
-  { dia: "12 de julio", nombre: "Miguel Valentía" },
-  { dia: "13 de julio", nombre: "Ander Toro Humano" },
-  { dia: "14 de julio", nombre: "Lucas Sin Miedo" }
+  { dia: "7 de julio", nombre: "Amaia" },
+  { dia: "8 de julio", nombre: "Naj" },
+  { dia: "9 de julio", nombre: "Ander" },
+  { dia: "10 de julio", nombre: "Izas" },
+  { dia: "11 de julio", nombre: "Miren" },
+  { dia: "12 de julio", nombre: "Blanca" },
+  { dia: "13 de julio", nombre: "Sora" },
+  { dia: "14 de julio", nombre: "Uxue" },
+  { dia: "15 de julio", nombre: "Jon" },
+  { dia: "16 de julio", nombre: "Martín" },
+  { dia: "17 de julio", nombre: "Zalbon" }
 ];
 
 // ---------- TABLA ----------
@@ -67,9 +76,7 @@ function cargarTabla() {
 
     let comentarios = JSON.parse(localStorage.getItem("comentarios_" + i) || "[]");
 
-    let listaComentarios = comentarios.map(c => `
-      <div class="comentario">💬 ${c}</div>
-    `).join("");
+    let lista = comentarios.map(c => `<div class="coment">💬 ${c}</div>`).join("");
 
     tabla.innerHTML += `
       <tr>
@@ -77,11 +84,10 @@ function cargarTabla() {
         <td>${d.nombre}</td>
         <td>${estrellas}</td>
         <td>
-          ${listaComentarios}
-
-          <div class="comment-box">
-            <input type="text" id="input_${i}" placeholder="Escribe comentario">
-            <button onclick="agregarComentario(${i})">+</button>
+          ${lista}
+          <div class="inputBox">
+            <input id="c_${i}" placeholder="Comentario">
+            <button onclick="comentar(${i})">+</button>
           </div>
         </td>
       </tr>
@@ -89,49 +95,49 @@ function cargarTabla() {
   });
 }
 
-function votar(id, valor) {
-  if (localStorage.getItem("voto_" + id)) return;
-  localStorage.setItem("voto_" + id, valor);
+function votar(i, v) {
+  if (localStorage.getItem("voto_" + i)) return;
+  localStorage.setItem("voto_" + i, v);
   cargarTabla();
   cargarRanking();
 }
 
-// ---------- COMENTARIOS POR DÍA ----------
-function agregarComentario(id) {
-  const input = document.getElementById("input_" + id);
-  const texto = input.value.trim();
-  if (!texto) return;
+// ---------- COMENTARIOS ----------
+function comentar(i) {
+  const input = document.getElementById("c_" + i);
+  if (!input.value.trim()) return;
 
-  let comentarios = JSON.parse(localStorage.getItem("comentarios_" + id) || "[]");
-  comentarios.push(texto);
+  let arr = JSON.parse(localStorage.getItem("comentarios_" + i) || "[]");
+  arr.push(input.value);
 
-  localStorage.setItem("comentarios_" + id, JSON.stringify(comentarios));
-
+  localStorage.setItem("comentarios_" + i, JSON.stringify(arr));
   input.value = "";
   cargarTabla();
 }
 
 // ---------- RANKING ----------
 function cargarRanking() {
-  let ranking = [];
+  let r = [];
 
   datos.forEach((d, i) => {
-    let voto = parseInt(localStorage.getItem("voto_" + i) || 0);
-    ranking.push({ dia: d.dia, nombre: d.nombre, voto });
+    r.push({
+      nombre: d.nombre,
+      dia: d.dia,
+      voto: parseInt(localStorage.getItem("voto_" + i) || 0)
+    });
   });
 
-  ranking.sort((a, b) => b.voto - a.voto);
+  r.sort((a, b) => b.voto - a.voto);
 
   document.getElementById("ranking").innerHTML =
-    ranking.map(r => `
-      <div class="ranking-item">
-        <strong>${r.dia} - ${r.nombre}</strong>
-        <span>⭐ ${r.voto}</span>
+    r.map(x => `
+      <div class="rank">
+        <strong>${x.dia} - ${x.nombre}</strong>
+        <span>⭐ ${x.voto}</span>
       </div>
     `).join("");
 }
 
-// INIT
 cargarTabla();
 cargarRanking();
 </script>
