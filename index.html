@@ -149,9 +149,15 @@ function comment(i) {
 async function load() {
   try {
     const res  = await fetch(URL_API);
-    const data = await res.json();
+    const text = await res.text();
+    console.log("Respuesta raw:", text);
+    const data = JSON.parse(text);
+    console.log("Datos:", data);
+
     const comments = data.filter(x => x.tipo === "comentario");
     const votes    = data.filter(x => x.tipo === "voto");
+    console.log("Comentarios:", comments);
+    console.log("Votos:", votes);
 
     datos.forEach((d, i) => {
       const el = document.getElementById("list_" + i);
