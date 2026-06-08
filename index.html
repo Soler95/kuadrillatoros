@@ -10,11 +10,12 @@
 
 <header>
   <h1>🐂 Cuadrilla de Toros de San Fermines</h1>
-  <p>Calendario de meriendas con votación ⭐</p>
+  <p>Votación de meriendas + comentarios</p>
 </header>
 
 <div class="container">
 
+  <!-- CALENDARIO -->
   <div class="card">
     <h2>📅 Calendario de meriendas (6–14 julio)</h2>
 
@@ -23,14 +24,23 @@
         <tr>
           <th>Día</th>
           <th>Encargado</th>
-          <th>⭐ Votos</th>
+          <th>⭐ Voto</th>
           <th>Acción</th>
         </tr>
       </thead>
 
       <tbody id="tabla"></tbody>
-
     </table>
+  </div>
+
+  <!-- COMENTARIOS -->
+  <div class="card">
+    <h2>💬 Comentarios de la cuadrilla</h2>
+
+    <textarea id="comentario" placeholder="Escribe tu comentario..."></textarea>
+    <button onclick="agregarComentario()">Enviar</button>
+
+    <div id="listaComentarios"></div>
   </div>
 
 </div>
@@ -48,34 +58,66 @@ const datos = [
   { dia: "14 de julio", nombre: "Lucas Sin Miedo" }
 ];
 
+// ---------- CALENDARIO ----------
 function cargarTabla() {
   const tabla = document.getElementById("tabla");
   tabla.innerHTML = "";
 
   datos.forEach((d, i) => {
-    let votos = localStorage.getItem("voto_" + i) || 0;
+    let voto = localStorage.getItem("voto_" + i);
+
+    let estrellas = "";
+    for (let s = 1; s <= 5; s++) {
+      estrellas += `<span onclick="votar(${i}, ${s})" class="star ${voto >= s ? 'active' : ''}">★</span>`;
+    }
+
+    let bloqueado = localStorage.getItem("voto_" + i) ? "disabled" : "";
 
     tabla.innerHTML += `
       <tr>
         <td>${d.dia}</td>
         <td>${d.nombre}</td>
-        <td>⭐ ${votos}</td>
+        <td>${estrellas}</td>
         <td>
-          <button onclick="votar(${i})">👍 Votar</button>
+          ${voto ? "✔ Votado" : "Selecciona estrellas"}
         </td>
       </tr>
     `;
   });
 }
 
-function votar(i) {
-  let votos = parseInt(localStorage.getItem("voto_" + i) || 0);
-  votos++;
-  localStorage.setItem("voto_" + i, votos);
+function votar(id, valor) {
+  if (localStorage.getItem("voto_" + id)) return; // solo 1 voto
+  localStorage.setItem("voto_" + id, valor);
   cargarTabla();
 }
 
+// ---------- COMENTARIOS ----------
+function agregarComentario() {
+  const input = document.getElementById("comentario");
+  const texto = input.value.trim();
+  if (!texto) return;
+
+  let comentarios = JSON.parse(localStorage.getItem("comentarios") || "[]");
+  comentarios.push(texto);
+  localStorage.setItem("comentarios", JSON.stringify(comentarios));
+
+  input.value = "";
+  cargarComentarios();
+}
+
+function cargarComentarios() {
+  const lista = document.getElementById("listaComentarios");
+  let comentarios = JSON.parse(localStorage.getItem("comentarios") || "[]");
+
+  lista.innerHTML = comentarios.map(c =>
+    `<div class="comentario">💬 ${c}</div>`
+  ).join("");
+}
+
+// INIT
 cargarTabla();
+cargarComentarios();
 </script>
 
 </body>
