@@ -10,7 +10,7 @@
 
 <header>
   <h1>🐂 Kuadrilla San Fermín 2026</h1>
-  <p>Calendario de meriendas + ranking + votaciones reales</p>
+  <p>Votaciones reales + Google Sheets</p>
 
   <nav>
     <a href="index.html">Calendario</a>
@@ -20,7 +20,6 @@
 
 <div class="container">
 
-  <!-- CALENDARIO -->
   <div class="card">
     <h2>📅 Meriendas (7–14 julio)</h2>
 
@@ -38,39 +37,33 @@
     </table>
   </div>
 
-  <!-- RANKING -->
   <div class="card">
-    <h2>🏆 Ranking (media de votos)</h2>
+    <h2>🏆 Ranking</h2>
     <div id="ranking"></div>
   </div>
 
 </div>
 
 <script>
+const GOOGLE_SCRIPT_URL = "TU_GOOGLE_SCRIPT_URL";
+
 const datos = [
-  { dia: "7 de julio", nombre: "TBC" },
-  { dia: "8 de julio", nombre: "TBC" },
-  { dia: "9 de julio", nombre: "TBC" },
-  { dia: "10 de julio", nombre: "TBC" },
-  { dia: "11 de julio", nombre: "TBC" },
-  { dia: "12 de julio", nombre: "TBC" },
-  { dia: "13 de julio", nombre: "TBC" },
-  { dia: "14 de julio", nombre: "TBC" }
+  { dia: "7 de julio", nombre: "Amaia" },
+  { dia: "8 de julio", nombre: "Naj" },
+  { dia: "9 de julio", nombre: "Ander" },
+  { dia: "10 de julio", nombre: "Izas" },
+  { dia: "11 de julio", nombre: "Miren" },
+  { dia: "12 de julio", nombre: "Blanca" },
+  { dia: "13 de julio", nombre: "Sora" },
+  { dia: "14 de julio", nombre: "Uxue" }
 ];
 
 // ---------- ESTRELLAS ----------
-function generarEstrellas(i, actual) {
+function estrellasHTML(i, actual) {
   let html = "";
-
   for (let s = 1; s <= 5; s++) {
-    html += `
-      <span class="star ${s <= actual ? 'active' : ''}"
-            onclick="votar(${i}, ${s})">
-        ★
-      </span>
-    `;
+    html += `<span class="star ${s <= actual ? 'active' : ''}" onclick="votar(${i}, ${s})">★</span>`;
   }
-
   return html;
 }
 
@@ -87,20 +80,18 @@ function cargarTabla() {
 
     let lista = comentarios.length
       ? comentarios.map(c => `<div class="coment">💬 ${c}</div>`).join("")
-      : `<div class="coment vacio">Sin comentarios aún</div>`;
+      : `<div class="coment vacio">Sin comentarios</div>`;
 
     tabla.innerHTML += `
       <tr>
         <td><strong>${d.dia}</strong></td>
         <td>${d.nombre}</td>
-        <td class="stars">
-          ${generarEstrellas(i, voto)}
-        </td>
+        <td>${estrellasHTML(i, voto)}</td>
         <td>
           ${lista}
 
           <div class="inputBox">
-            <input id="c_${i}" placeholder="Escribe comentario...">
+            <input id="c_${i}" placeholder="Comentario">
             <button onclick="comentar(${i})">Enviar</button>
           </div>
         </td>
@@ -109,9 +100,29 @@ function cargarTabla() {
   });
 }
 
-// ---------- VOTAR (1 por persona, pero modificable) ----------
-function votar(i, v) {
-  localStorage.setItem("voto_" + i, v);
+// ---------- VOTAR (NOMBRE OBLIGATORIO + GOOGLE SHEETS) ----------
+function votar(i, valor) {
+
+  if (localStorage.getItem("voto_" + i)) {
+    alert("Ya has votado este día");
+    return;
+  }
+
+  let nombre = prompt("Escribe tu nombre:");
+  if (!nombre) return;
+
+  localStorage.setItem("voto_" + i, valor);
+
+  fetch(GOOGLE_SCRIPT_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      dia: datos[i].dia,
+      encargado: datos[i].nombre,
+      usuario: nombre,
+      voto: valor
+    })
+  });
+
   cargarTabla();
   cargarRanking();
 }
@@ -130,7 +141,7 @@ function comentar(i) {
   cargarTabla();
 }
 
-// ---------- RANKING (MEDIA REAL) ----------
+// ---------- RANKING ----------
 function cargarRanking() {
   let r = [];
 
@@ -140,17 +151,17 @@ function cargarRanking() {
     r.push({
       dia: d.dia,
       nombre: d.nombre,
-      media: voto
+      voto
     });
   });
 
-  r.sort((a, b) => b.media - a.media);
+  r.sort((a, b) => b.voto - a.voto);
 
   document.getElementById("ranking").innerHTML =
     r.map(x => `
       <div class="rank">
         <strong>${x.dia} - ${x.nombre}</strong>
-        <span>⭐ ${x.media.toFixed(1)}</span>
+        <span>⭐ ${x.voto}</span>
       </div>
     `).join("");
 }
