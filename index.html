@@ -51,7 +51,9 @@
 </footer>
 
 <script>
+/* ── URLs ── */
 const URL_API = "https://script.google.com/macros/s/AKfycbxUHuuox2IMjxuFXH61xSXlQFMEGWxUhLNKQcpvWm2ghPcqqbeldcMXEM3mvHn_CJT8/exec";
+const URL_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSeQ-dslJmHhOe_JJH5Cu7Fhz1P_aHwtQAEKkZ3BIzKWqrAqM5q2f_AHhnSUMUB-Iz5Gx67BS4uOQ8Q/pub?gid=0&single=true&output=csv&nocache=";
 
 const datos = [
   { dia: "7julio",  label: "7 de julio",  nombre: "Amaia", emoji: "🧁" },
@@ -64,6 +66,7 @@ const datos = [
   { dia: "14julio", label: "14 de julio", nombre: "Uxue",  emoji: "🎂" }
 ];
 
+/* ── RENDER ── */
 function render() {
   const grid = document.getElementById("tabla");
   grid.innerHTML = "";
@@ -96,6 +99,7 @@ function render() {
   });
 }
 
+/* ── VOTAR ── */
 function vote(i, value) {
   if (localStorage.getItem("voto_" + i)) {
     showToast("¡Ya has votado este día! 🗳️");
@@ -107,16 +111,17 @@ function vote(i, value) {
   render();
 
   const url = URL_API
-    + "?dia=" + encodeURIComponent(datos[i].dia)
+    + "?dia="     + encodeURIComponent(datos[i].dia)
     + "&usuario=" + encodeURIComponent(name.trim())
     + "&tipo=voto"
-    + "&valor=" + value;
+    + "&valor="   + value;
 
   fetch(url)
-    .then(() => { showToast("¡Voto enviado! ⭐"); setTimeout(load, 800); })
+    .then(() => { showToast("¡Voto enviado! ⭐"); setTimeout(load, 1000); })
     .catch(() => showToast("Error al enviar 😕"));
 }
 
+/* ── COMENTAR ── */
 function comment(i) {
   const input = document.getElementById("input_" + i);
   const text = input.value.trim();
@@ -127,16 +132,16 @@ function comment(i) {
   input.disabled = true;
 
   const url = URL_API
-    + "?dia=" + encodeURIComponent(datos[i].dia)
+    + "?dia="     + encodeURIComponent(datos[i].dia)
     + "&usuario=" + encodeURIComponent(name.trim())
     + "&tipo=comentario"
-    + "&valor=" + encodeURIComponent(text);
+    + "&valor="   + encodeURIComponent(text);
 
   fetch(url)
     .then(() => {
       showToast("¡Comentario enviado! 💬");
       input.disabled = false;
-      setTimeout(load, 800);
+      setTimeout(load, 1000);
     })
     .catch(() => {
       input.disabled = false;
@@ -144,29 +149,44 @@ function comment(i) {
     });
 }
 
+/* ── CARGAR DATOS DESDE CSV ── */
 async function load() {
   try {
-    const res  = await fetch(URL_API + "?nocache=" + Date.now());
-    const data = await res.json();
+    const res  = await fetch(URL_CSV + Date.now());
+    const text = await res.text();
+
+    const lines = text.trim().split("\n").slice(1);
+    const data  = lines
+      .map(line => {
+        const cols = line.split(",");
+        return {
+          dia:     (cols[0] || "").trim().replace(/"/g, ""),
+          usuario: (cols[1] || "").trim().replace(/"/g, ""),
+          tipo:    (cols[2] || "").trim().replace(/"/g, ""),
+          valor:   (cols[3] || "").trim().replace(/"/g, "")
+        };
+      })
+      .filter(x => x.dia && x.tipo);
 
     const comments = data.filter(x => x.tipo === "comentario");
     const votes    = data.filter(x => x.tipo === "voto");
 
+    /* Mostrar comentarios */
     datos.forEach((d, i) => {
       const el = document.getElementById("list_" + i);
       if (!el) return;
-      const list = comments.filter(c => String(c.dia).trim() === d.dia);
+      const list = comments.filter(c => c.dia === d.dia);
       el.innerHTML = list.length
         ? list.map(c => `<div class="comment"><span class="comment-user">${c.usuario}</span> ${c.valor}</div>`).join("")
         : '<p class="no-comments">Sé el primero en comentar 👇</p>';
     });
 
+    /* Calcular medias */
     let map = {};
     votes.forEach(v => {
-      const key = String(v.dia).trim();
-      if (!map[key]) map[key] = { sum: 0, count: 0 };
-      map[key].sum   += Number(v.valor);
-      map[key].count += 1;
+      if (!map[v.dia]) map[v.dia] = { sum: 0, count: 0 };
+      map[v.dia].sum   += Number(v.valor);
+      map[v.dia].count += 1;
     });
 
     datos.forEach((d, i) => {
@@ -181,10 +201,10 @@ async function load() {
       }
     });
 
+    /* Ranking */
     let arr = Object.keys(map).map(key => {
       const d = datos.find(x => x.dia === key);
       return {
-        dia:    key,
         label:  d?.label  || key,
         nombre: d?.nombre || "",
         emoji:  d?.emoji  || "🍽️",
@@ -212,10 +232,11 @@ async function load() {
       : '<p class="loading">Aún no hay votos 🗳️</p>';
 
   } catch (e) {
-    console.error("Error cargando datos:", e);
+    console.error("Error cargando CSV:", e);
   }
 }
 
+/* ── TOAST ── */
 function showToast(msg) {
   const t = document.createElement("div");
   t.className = "toast";
