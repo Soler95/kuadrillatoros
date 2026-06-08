@@ -1,14 +1,32 @@
 body {
   font-family: Arial, sans-serif;
   margin: 0;
-  background: #f3f3f3;
+  background: #eef0f3;
 }
 
 header {
-  background: linear-gradient(90deg, red, darkred);
+  background: linear-gradient(90deg, #d00000, #7a0000);
   color: white;
   text-align: center;
   padding: 25px;
+}
+
+nav {
+  margin-top: 10px;
+}
+
+nav a {
+  color: white;
+  margin: 0 10px;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.2);
+}
+
+nav a:hover {
+  background: white;
+  color: black;
 }
 
 .container {
@@ -22,7 +40,7 @@ header {
   padding: 20px;
   margin-bottom: 20px;
   border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 12px rgba(0,0,0,0.1);
 }
 
 /* TABLA */
@@ -50,46 +68,49 @@ td {
   color: #ccc;
 }
 
-.star:hover {
-  color: gold;
-}
-
+.star:hover,
 .star.active {
   color: gold;
 }
 
 /* COMENTARIOS */
-.comment-box {
+.inputBox {
   display: flex;
-  margin-top: 8px;
+  margin-top: 5px;
 }
 
-.comment-box input {
+.inputBox input {
   flex: 1;
   padding: 5px;
 }
 
-.comment-box button {
-  padding: 5px 10px;
+.inputBox button {
   background: red;
   color: white;
   border: none;
+  padding: 6px 10px;
   cursor: pointer;
 }
 
-.comentario {
-  background: #eee;
-  padding: 5px;
+.coment {
+  background: #f1f1f1;
   margin-top: 5px;
+  padding: 5px;
   border-radius: 6px;
 }
 
 /* RANKING */
-.ranking-item {
-  background: #f1f1f1;
+.rank {
+  background: #f6f6f6;
   padding: 10px;
   margin-top: 8px;
-  border-radius: 8px;
   display: flex;
   justify-content: space-between;
+  border-radius: 8px;
+}
+
+/* LISTA MIEMBROS */
+.lista li {
+  padding: 6px;
+  border-bottom: 1px solid #eee;
 }
