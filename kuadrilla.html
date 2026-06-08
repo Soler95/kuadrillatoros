@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Miembros · Kuadrilla San Fermín 2026</title>
+  <title>Miembros · La Kuadrilla de Pipo San Fermín 2026</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* ── BEBIDAS ── */
     .bebidas-section { padding: 1.5rem; }
 
     .bebida-member {
@@ -17,7 +16,6 @@
       border-bottom: 1px solid var(--gris);
       flex-wrap: wrap;
     }
-
     .bebida-member:last-child { border-bottom: none; }
 
     .bebida-member-name {
@@ -27,12 +25,7 @@
       color: var(--tinta);
     }
 
-    .bebida-buttons {
-      display: flex;
-      gap: 0.4rem;
-      flex-wrap: wrap;
-      flex: 1;
-    }
+    .bebida-buttons { display: flex; gap: 0.4rem; flex-wrap: wrap; flex: 1; }
 
     .bebida-btn {
       padding: 0.4rem 0.85rem;
@@ -47,13 +40,7 @@
       color: var(--tinta-soft);
       white-space: nowrap;
     }
-
-    .bebida-btn:hover {
-      border-color: var(--rojo);
-      color: var(--rojo);
-      transform: translateY(-1px);
-    }
-
+    .bebida-btn:hover { border-color: var(--rojo); color: var(--rojo); }
     .bebida-btn.selected {
       background: var(--rojo);
       border-color: var(--rojo);
@@ -61,29 +48,12 @@
       box-shadow: 0 2px 8px rgba(192,57,43,0.3);
     }
 
-    .bebida-btn.selected:hover {
-      background: var(--rojo-dark);
-      transform: translateY(-1px);
-    }
+    .bebida-status { font-size: 0.78rem; color: var(--tinta-soft); font-style: italic; min-width: 90px; }
+    .bebida-status.elegida { color: var(--verde); font-style: normal; font-weight: 700; }
 
-    .bebida-status {
-      font-size: 0.78rem;
-      color: var(--tinta-soft);
-      font-style: italic;
-      min-width: 80px;
-    }
-
-    .bebida-status.elegida {
-      color: var(--verde);
-      font-style: normal;
-      font-weight: 700;
-    }
-
-    /* ── RESUMEN TABLA ── */
     .resumen-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 0;
     }
 
     .resumen-item {
@@ -92,45 +62,28 @@
       border-right: 1px solid var(--gris);
       transition: background 0.2s;
     }
-
     .resumen-item:last-child { border-right: none; }
     .resumen-item:hover { background: var(--rojo-dim); }
 
-    .resumen-emoji { font-size: 2rem; display: block; margin-bottom: 0.4rem; }
+    .resumen-emoji  { font-size: 2rem; display: block; margin-bottom: 0.4rem; }
+    .resumen-nombre { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--tinta-soft); margin-bottom: 0.4rem; }
+    .resumen-total  { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; color: var(--rojo); line-height: 1; }
+    .resumen-personas { font-size: 0.7rem; color: var(--tinta-soft); margin-top: 0.5rem; line-height: 1.8; }
 
-    .resumen-nombre {
-      font-size: 0.72rem;
+    .persona-pill {
+      display: inline-block;
+      background: var(--rojo-dim);
+      border-radius: 10px;
+      padding: 1px 8px;
+      margin: 1px;
+      font-size: 0.7rem;
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--tinta-soft);
-      margin-bottom: 0.4rem;
-    }
-
-    .resumen-total {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 3rem;
       color: var(--rojo);
-      line-height: 1;
-    }
-
-    .resumen-personas {
-      font-size: 0.72rem;
-      color: var(--tinta-soft);
-      margin-top: 0.3rem;
-    }
-
-    .resumen-lista {
-      font-size: 0.72rem;
-      color: var(--tinta-soft);
-      margin-top: 0.3rem;
-      line-height: 1.6;
     }
 
     @media (max-width: 600px) {
-      .resumen-grid    { grid-template-columns: repeat(2, 1fr); }
-      .bebida-buttons  { gap: 0.3rem; }
-      .bebida-btn      { font-size: 0.72rem; padding: 0.35rem 0.7rem; }
+      .resumen-grid   { grid-template-columns: repeat(2, 1fr); }
+      .bebida-btn     { font-size: 0.72rem; padding: 0.35rem 0.7rem; }
     }
   </style>
 </head>
@@ -168,7 +121,7 @@
   <section class="card">
     <div class="card-header" data-emoji="😄">
       <h2>😄 Cada uno con su "problema"</h2>
-      <p>Descripción oficial y científicamente verificada de cada miembro</p>
+      <p>Descripción oficial y científicamente verificada</p>
     </div>
     <div class="miembros-grid">
       <div class="miembro-card"><span class="miembro-avatar">🙋‍♀️</span><div class="miembro-nombre">Amaia</div><div class="miembro-problema">Se pierde hasta en su calle</div></div>
@@ -190,22 +143,42 @@
   <section class="card">
     <div class="card-header" data-emoji="🍹">
       <h2>🍹 ¿Qué vas a beber?</h2>
-      <p>Elige tu bebida para que sepamos cuánto pedir</p>
+      <p>Elige tu bebida · Se guarda automáticamente para todos</p>
     </div>
     <div class="bebidas-section" id="bebidasSection"></div>
   </section>
 
-  <!-- RESUMEN BEBIDAS -->
+  <!-- RESUMEN -->
   <section class="card">
     <div class="card-header" data-emoji="📋">
       <h2>📋 Resumen de bebidas</h2>
-      <p>Total por bebida · Se actualiza en tiempo real</p>
+      <p>Total por bebida · Actualización cada 5 segundos</p>
     </div>
-    <div class="resumen-grid" id="resumenGrid">
-      <div class="resumen-item"><span class="resumen-emoji">🍸</span><div class="resumen-nombre">GinKas</div><div class="resumen-total" id="total-GinKas">0</div><div class="resumen-personas" id="personas-GinKas"></div></div>
-      <div class="resumen-item"><span class="resumen-emoji">🍋</span><div class="resumen-nombre">GinTonic</div><div class="resumen-total" id="total-GinTonic">0</div><div class="resumen-personas" id="personas-GinTonic"></div></div>
-      <div class="resumen-item"><span class="resumen-emoji">🥃</span><div class="resumen-nombre">BrugalCola</div><div class="resumen-total" id="total-BrugalCola">0</div><div class="resumen-personas" id="personas-BrugalCola"></div></div>
-      <div class="resumen-item"><span class="resumen-emoji">🍊</span><div class="resumen-nombre">Aquarius</div><div class="resumen-total" id="total-Aquarius">0</div><div class="resumen-personas" id="personas-Aquarius"></div></div>
+    <div class="resumen-grid">
+      <div class="resumen-item">
+        <span class="resumen-emoji">🍸</span>
+        <div class="resumen-nombre">GinKas</div>
+        <div class="resumen-total" id="total-GinKas">0</div>
+        <div class="resumen-personas" id="personas-GinKas"><span style="color:#ccc;font-style:italic">Nadie aún</span></div>
+      </div>
+      <div class="resumen-item">
+        <span class="resumen-emoji">🍋</span>
+        <div class="resumen-nombre">GinTonic</div>
+        <div class="resumen-total" id="total-GinTonic">0</div>
+        <div class="resumen-personas" id="personas-GinTonic"><span style="color:#ccc;font-style:italic">Nadie aún</span></div>
+      </div>
+      <div class="resumen-item">
+        <span class="resumen-emoji">🥃</span>
+        <div class="resumen-nombre">BrugalCola</div>
+        <div class="resumen-total" id="total-BrugalCola">0</div>
+        <div class="resumen-personas" id="personas-BrugalCola"><span style="color:#ccc;font-style:italic">Nadie aún</span></div>
+      </div>
+      <div class="resumen-item">
+        <span class="resumen-emoji">🍊</span>
+        <div class="resumen-nombre">Aquarius</div>
+        <div class="resumen-total" id="total-Aquarius">0</div>
+        <div class="resumen-personas" id="personas-Aquarius"><span style="color:#ccc;font-style:italic">Nadie aún</span></div>
+      </div>
     </div>
   </section>
 
@@ -235,126 +208,123 @@ const URL_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSeQ-dslJmHhOe_
 
 const miembros = ["Amaia","Naj","Ander","Izas","Miren","Blanca","Sora","Uxue","Jon","Martín","Zalbon","Landa"];
 const bebidas  = ["GinKas","GinTonic","BrugalCola","Aquarius"];
-const bebidaEmoji = { GinKas: "🍸", GinTonic: "🍋", BrugalCola: "🥃", Aquarius: "🍊" };
+const emojis   = { GinKas:"🍸", GinTonic:"🍋", BrugalCola:"🥃", Aquarius:"🍊" };
 
-/* ── RENDER SECCIÓN BEBIDAS ── */
+/* Estado en memoria — fuente de verdad para los botones */
+const elecciones = {};
+
+/* ── RENDER INICIAL (solo una vez) ── */
 function renderBebidas() {
   const sec = document.getElementById("bebidasSection");
-  sec.innerHTML = miembros.map(nombre => {
-    const guardada = localStorage.getItem("bebida_" + nombre) || "";
-    const btns = bebidas.map(b => `
-      <button class="bebida-btn ${guardada === b ? 'selected' : ''}"
-              onclick="elegirBebida('${nombre}','${b}')">
-        ${bebidaEmoji[b]} ${b}
-      </button>`).join("");
-    return `
-      <div class="bebida-member" id="bebida_row_${nombre}">
-        <div class="bebida-member-name">${nombre}</div>
-        <div class="bebida-buttons">${btns}</div>
-        <div class="bebida-status ${guardada ? 'elegida' : ''}" id="bebida_status_${nombre}">
-          ${guardada ? '✅ ' + guardada : 'Sin elegir'}
-        </div>
-      </div>`;
-  }).join("");
+  sec.innerHTML = miembros.map(nombre => `
+    <div class="bebida-member">
+      <div class="bebida-member-name">${nombre}</div>
+      <div class="bebida-buttons" id="btns_${nombre}"></div>
+      <div class="bebida-status" id="status_${nombre}">Sin elegir</div>
+    </div>
+  `).join("");
+
+  miembros.forEach(nombre => actualizarBotones(nombre));
+}
+
+/* ── ACTUALIZAR BOTONES DE UN MIEMBRO (sin re-renderizar todo) ── */
+function actualizarBotones(nombre) {
+  const contenedor = document.getElementById("btns_" + nombre);
+  const statusEl   = document.getElementById("status_" + nombre);
+  if (!contenedor || !statusEl) return;
+
+  const seleccion = elecciones[nombre] || "";
+
+  contenedor.innerHTML = bebidas.map(b => `
+    <button class="bebida-btn ${seleccion === b ? 'selected' : ''}"
+            onclick="elegirBebida('${nombre}','${b}')">
+      ${emojis[b]} ${b}
+    </button>`).join("");
+
+  if (seleccion) {
+    statusEl.textContent = "✅ " + seleccion;
+    statusEl.className = "bebida-status elegida";
+  } else {
+    statusEl.textContent = "Sin elegir";
+    statusEl.className = "bebida-status";
+  }
 }
 
 /* ── ELEGIR BEBIDA ── */
 function elegirBebida(nombre, bebida) {
-  const anterior = localStorage.getItem("bebida_" + nombre);
-
-  // Si ya eligió la misma, deseleccionar
-  if (anterior === bebida) {
-    localStorage.removeItem("bebida_" + nombre);
-    renderBebidas();
-    actualizarResumen();
-    return;
-  }
-
-  localStorage.setItem("bebida_" + nombre, bebida);
-  renderBebidas();
+  elecciones[nombre] = bebida;
+  actualizarBotones(nombre);
+  actualizarResumen();
 
   const url = URL_API
     + "?dia=bebidas"
     + "&usuario=" + encodeURIComponent(nombre)
     + "&tipo=bebida"
-    + "&valor=" + encodeURIComponent(bebida);
+    + "&valor="   + encodeURIComponent(bebida);
 
   fetch(url)
-    .then(() => {
-      showToast(bebidaEmoji[bebida] + " " + nombre + " quiere " + bebida);
-      setTimeout(cargarBebidas, 800);
-    })
+    .then(() => showToast(emojis[bebida] + " " + nombre + " · " + bebida))
     .catch(() => showToast("Error al guardar 😕"));
 }
 
-/* ── CARGAR BEBIDAS DESDE CSV ── */
-async function cargarBebidas() {
-  try {
-    const res  = await fetch(URL_CSV + Date.now());
-    const text = await res.text();
-    const lines = text.trim().split("\n").slice(1);
-
-    const data = lines
-      .map(line => {
-        const cols = line.split(",");
-        return {
-          dia:     (cols[0] || "").trim().replace(/"/g, ""),
-          usuario: (cols[1] || "").trim().replace(/"/g, ""),
-          tipo:    (cols[2] || "").trim().replace(/"/g, ""),
-          valor:   (cols[3] || "").trim().replace(/"/g, "")
-        };
-      })
-      .filter(x => x.tipo === "bebida");
-
-    // Última elección por persona (por si hay varias filas)
-    const ultimaEleccion = {};
-    data.forEach(x => { ultimaEleccion[x.usuario] = x.valor; });
-
-    // Actualizar localStorage con datos de Google Sheets
-    Object.entries(ultimaEleccion).forEach(([nombre, bebida]) => {
-      localStorage.setItem("bebida_" + nombre, bebida);
-    });
-
-    actualizarResumen(ultimaEleccion);
-
-  } catch (e) {
-    // Si falla el CSV, usar localStorage
-    actualizarResumen();
-  }
-}
-
-/* ── ACTUALIZAR RESUMEN ── */
-function actualizarResumen(eleccionesSheet = null) {
-  const conteo = {};
+/* ── ACTUALIZAR RESUMEN (solo los números, sin tocar botones) ── */
+function actualizarResumen() {
+  const conteo   = {};
   const personas = {};
   bebidas.forEach(b => { conteo[b] = 0; personas[b] = []; });
 
-  // Usar datos de Google Sheets si los hay, si no localStorage
-  if (eleccionesSheet) {
-    Object.entries(eleccionesSheet).forEach(([nombre, bebida]) => {
-      if (conteo[bebida] !== undefined) {
-        conteo[bebida]++;
-        personas[bebida].push(nombre);
-      }
-    });
-  } else {
-    miembros.forEach(nombre => {
-      const b = localStorage.getItem("bebida_" + nombre);
-      if (b && conteo[b] !== undefined) {
-        conteo[b]++;
-        personas[b].push(nombre);
-      }
-    });
-  }
+  Object.entries(elecciones).forEach(([nombre, b]) => {
+    if (conteo[b] !== undefined) {
+      conteo[b]++;
+      personas[b].push(nombre);
+    }
+  });
 
   bebidas.forEach(b => {
-    const totalEl   = document.getElementById("total-" + b);
+    const totalEl    = document.getElementById("total-" + b);
     const personasEl = document.getElementById("personas-" + b);
     if (totalEl)    totalEl.textContent = conteo[b];
     if (personasEl) personasEl.innerHTML = personas[b].length
-      ? personas[b].map(p => `<span style="display:inline-block;background:var(--rojo-dim);border-radius:10px;padding:1px 7px;margin:1px;font-size:0.7rem;font-weight:700;color:var(--rojo)">${p}</span>`).join("")
+      ? personas[b].map(p => `<span class="persona-pill">${p}</span>`).join("")
       : '<span style="color:#ccc;font-style:italic">Nadie aún</span>';
   });
+}
+
+/* ── CARGAR DESDE CSV (actualiza estado, no los botones si ya están OK) ── */
+async function cargarDesdeCSV() {
+  try {
+    const res   = await fetch(URL_CSV + Date.now());
+    const text  = await res.text();
+    const lines = text.trim().split("\n").slice(1);
+
+    /* Última elección por persona */
+    const nuevas = {};
+    lines.forEach(line => {
+      const cols = line.split(",");
+      const dia     = (cols[0] || "").trim().replace(/"/g, "");
+      const usuario = (cols[1] || "").trim().replace(/"/g, "");
+      const tipo    = (cols[2] || "").trim().replace(/"/g, "");
+      const valor   = (cols[3] || "").trim().replace(/"/g, "");
+      if (tipo === "bebida" && dia === "bebidas") {
+        nuevas[usuario] = valor;
+      }
+    });
+
+    /* Solo actualizar si hay cambios */
+    let cambios = false;
+    Object.entries(nuevas).forEach(([nombre, bebida]) => {
+      if (elecciones[nombre] !== bebida) {
+        elecciones[nombre] = bebida;
+        actualizarBotones(nombre);
+        cambios = true;
+      }
+    });
+
+    if (cambios) actualizarResumen();
+
+  } catch (e) {
+    console.error("Error CSV:", e);
+  }
 }
 
 /* ── TOAST ── */
@@ -370,8 +340,8 @@ function showToast(msg) {
 /* ── INIT ── */
 renderBebidas();
 actualizarResumen();
-cargarBebidas();
-setInterval(cargarBebidas, 5000);
+cargarDesdeCSV();
+setInterval(cargarDesdeCSV, 5000);
 </script>
 
 </body>
