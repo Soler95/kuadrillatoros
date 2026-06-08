@@ -39,7 +39,7 @@
   <section class="card">
     <div class="card-header" data-emoji="🍽️">
       <h2>📅 Meriendas 7–14 julio</h2>
-      <p>Vota la merienda de cada día y deja tu comentario</p>
+      <p>Escribe el menú, vota y deja tu comentario</p>
     </div>
     <div id="tabla" class="meriendas-grid"></div>
   </section>
@@ -75,9 +75,7 @@ const datos = [
   { dia: "14julio", label: "14 de julio", nombre: "TBC", emoji: "🎂" }
 ];
 
-/* ── Estado en memoria ── */
-const estadoVotos    = {}; // { "7julio": { avg: 4.2, count: 3 } }
-const estadoComents  = {}; // { "7julio": [{usuario, valor}, ...] }
+let vaciosConsecutivos = 0;
 
 /* ── RENDER INICIAL — solo una vez ── */
 function renderInicial() {
@@ -98,10 +96,26 @@ function renderInicial() {
             <div class="merienda-nombre">${d.nombre}</div>
           </div>
         </div>
+
+        <div class="menu-wrap">
+          <div class="menu-label">🍽️ Menú del día</div>
+          <div class="menu-titulo-display" id="menu_display_${i}"></div>
+          <div class="menu-input-row">
+            <input class="menu-input" id="menu_${i}"
+                   placeholder="✏️ Escribe el menú..."
+                   maxlength="80"
+                   onkeydown="if(event.key==='Enter') guardarMenu(${i})">
+            <button class="menu-btn-save" onclick="guardarMenu(${i})">✅ Guardar</button>
+          </div>
+        </div>
+
         <div class="stars-row" id="stars_${i}">${stars}</div>
         <div class="avg-display" id="avg_${i}"><span class="avg-none">Sin votos aún</span></div>
+
         <div class="comment-section">
-          <div class="comments-list" id="list_${i}"><p class="no-comments">Sé el primero en comentar 👇</p></div>
+          <div class="comments-list" id="list_${i}">
+            <p class="no-comments">Sé el primero en comentar 👇</p>
+          </div>
           <div class="comment-input">
             <input id="input_${i}" placeholder="Tu comentario..." maxlength="200">
             <button onclick="comment(${i})">Enviar 💬</button>
@@ -112,7 +126,7 @@ function renderInicial() {
   });
 }
 
-/* ── ACTUALIZAR ESTRELLAS de un día (sin re-renderizar todo) ── */
+/* ── ACTUALIZAR ESTRELLAS ── */
 function actualizarEstrellas(i) {
   const starsEl = document.getElementById("stars_" + i);
   if (!starsEl) return;
@@ -170,7 +184,24 @@ function comment(i) {
     });
 }
 
-/* ── CARGAR DATOS CSV (solo actualiza lo que cambia) ── */
+/* ── GUARDAR MENÚ ── */
+function guardarMenu(i) {
+  const input = document.getElementById("menu_" + i);
+  const texto = input.value.trim();
+  if (!texto) return;
+
+  const url = URL_API
+    + "?dia="     + encodeURIComponent(datos[i].dia)
+    + "&usuario=menu"
+    + "&tipo=menu"
+    + "&valor="   + encodeURIComponent(texto);
+
+  fetch(url)
+    .then(() => { showToast("🍽️ Menú guardado"); setTimeout(load, 800); })
+    .catch(() => showToast("Error al guardar 😕"));
+}
+
+/* ── CARGAR DATOS CSV ── */
 async function load() {
   try {
     const res   = await fetch(URL_CSV + Date.now());
@@ -190,6 +221,7 @@ async function load() {
 
     const comments = data.filter(x => x.tipo === "comentario");
     const votes    = data.filter(x => x.tipo === "voto");
+    const menus    = data.filter(x => x.tipo === "menu");
 
     /* Calcular medias */
     const map = {};
@@ -199,15 +231,26 @@ async function load() {
       map[v.dia].count += 1;
     });
 
-    /* Actualizar avg y comentarios solo si cambiaron */
     datos.forEach((d, i) => {
+
+      /* ── Menú del día ── */
+      const menuDia     = menus.filter(x => x.dia === d.dia).pop();
+      const menuInput   = document.getElementById("menu_" + i);
+      const menuDisplay = document.getElementById("menu_display_" + i);
+      if (menuDia && menuDia.valor) {
+        if (menuInput  && document.activeElement !== menuInput) menuInput.value = menuDia.valor;
+        if (menuDisplay) {
+          menuDisplay.textContent = "📋 " + menuDia.valor;
+          menuDisplay.classList.add("visible");
+        }
+      }
 
       /* ── Media ── */
       const avgEl = document.getElementById("avg_" + i);
       if (avgEl && map[d.dia]) {
-        const avg = (map[d.dia].sum / map[d.dia].count).toFixed(1);
-        const n   = map[d.dia].count;
-        const nuevo = `<div class="avg-badge"><span class="avg-score">⭐ ${avg}</span><span class="avg-count">${n} voto${n !== 1 ? 's' : ''}</span></div>`;
+        const avg    = (map[d.dia].sum / map[d.dia].count).toFixed(1);
+        const n      = map[d.dia].count;
+        const nuevo  = `<div class="avg-badge"><span class="avg-score">⭐ ${avg}</span><span class="avg-count">${n} voto${n !== 1 ? 's' : ''}</span></div>`;
         if (avgEl.innerHTML !== nuevo) avgEl.innerHTML = nuevo;
       }
 
@@ -222,6 +265,7 @@ async function load() {
     });
 
     /* ── Ranking ── */
+    const rankingEl = document.getElementById("ranking");
     let arr = Object.keys(map).map(key => {
       const d = datos.find(x => x.dia === key);
       return {
@@ -235,29 +279,30 @@ async function load() {
     arr.sort((a, b) => b.avg - a.avg);
 
     const medals = ["🥇", "🥈", "🥉"];
-    const rankingEl = document.getElementById("ranking");
-    const nuevoRanking = arr.length
-      ? arr.map((x, idx) => {
-          const stars = "★".repeat(Math.round(x.avg)) + "☆".repeat(5 - Math.round(x.avg));
-          return `
-            <div class="rank-item ${idx === 0 ? 'rank-first' : ''}">
-              <span class="rank-medal">${medals[idx] || (idx+1) + 'º'}</span>
-              <span class="rank-emoji">${x.emoji}</span>
-              <div class="rank-info">
-                <strong>${x.label}</strong>
-                <span>${x.nombre} · <span class="rank-stars">${stars}</span></span>
-              </div>
-              <div class="rank-score">
-                <span class="rank-avg">⭐ ${x.avg.toFixed(1)}</span>
-                <span class="rank-votes">${x.count} voto${x.count !== 1 ? 's' : ''}</span>
-              </div>
-            </div>`;
-        }).join("")
-      : '<p class="loading">Aún no hay votos 🗳️</p>';
 
-  if (arr.length > 0 && rankingEl.innerHTML !== nuevoRanking) {
-  rankingEl.innerHTML = nuevoRanking;
-}
+    if (arr.length > 0) {
+      vaciosConsecutivos = 0;
+      const nuevoRanking = arr.map((x, idx) => {
+        const stars = "★".repeat(Math.round(x.avg)) + "☆".repeat(5 - Math.round(x.avg));
+        return `
+          <div class="rank-item ${idx === 0 ? 'rank-first' : ''}">
+            <span class="rank-medal">${medals[idx] || (idx+1) + 'º'}</span>
+            <span class="rank-emoji">${x.emoji}</span>
+            <div class="rank-info">
+              <strong>${x.label}</strong>
+              <span>${x.nombre} · <span class="rank-stars">${stars}</span></span>
+            </div>
+            <div class="rank-score">
+              <span class="rank-avg">⭐ ${x.avg.toFixed(1)}</span>
+              <span class="rank-votes">${x.count} voto${x.count !== 1 ? 's' : ''}</span>
+            </div>
+          </div>`;
+      }).join("");
+      if (rankingEl.innerHTML !== nuevoRanking) rankingEl.innerHTML = nuevoRanking;
+    } else {
+      vaciosConsecutivos++;
+      if (vaciosConsecutivos >= 2) rankingEl.innerHTML = '<p class="loading">Aún no hay votos 🗳️</p>';
+    }
 
   } catch (e) {
     console.error("Error:", e);
