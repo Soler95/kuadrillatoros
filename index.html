@@ -9,8 +9,8 @@
 <body>
 
 <header>
-  <h1>🐂 Meriendas Kuadrilla San Fermin 2026</h1>
-  <p>Calendario de meriendas + ranking</p>
+  <h1>🐂 Kuadrilla San Fermín 2026</h1>
+  <p>Calendario de meriendas + ranking + votaciones reales</p>
 
   <nav>
     <a href="index.html">Calendario</a>
@@ -22,14 +22,14 @@
 
   <!-- CALENDARIO -->
   <div class="card">
-    <h2>📅 Meriendas (desde el 7 de julio)</h2>
+    <h2>📅 Meriendas (7–14 julio)</h2>
 
     <table>
       <thead>
         <tr>
           <th>Día</th>
           <th>Encargado</th>
-          <th>⭐ Votos</th>
+          <th>⭐ Voto</th>
           <th>Comentarios</th>
         </tr>
       </thead>
@@ -40,7 +40,7 @@
 
   <!-- RANKING -->
   <div class="card">
-    <h2>🏆 Ranking</h2>
+    <h2>🏆 Ranking (media de votos)</h2>
     <div id="ranking"></div>
   </div>
 
@@ -55,9 +55,24 @@ const datos = [
   { dia: "11 de julio", nombre: "TBC" },
   { dia: "12 de julio", nombre: "TBC" },
   { dia: "13 de julio", nombre: "TBC" },
-  { dia: "14 de julio", nombre: "TBC" },
-
+  { dia: "14 de julio", nombre: "TBC" }
 ];
+
+// ---------- ESTRELLAS ----------
+function generarEstrellas(i, actual) {
+  let html = "";
+
+  for (let s = 1; s <= 5; s++) {
+    html += `
+      <span class="star ${s <= actual ? 'active' : ''}"
+            onclick="votar(${i}, ${s})">
+        ★
+      </span>
+    `;
+  }
+
+  return html;
+}
 
 // ---------- TABLA ----------
 function cargarTabla() {
@@ -65,27 +80,28 @@ function cargarTabla() {
   tabla.innerHTML = "";
 
   datos.forEach((d, i) => {
-    let voto = localStorage.getItem("voto_" + i);
 
-    let estrellas = "";
-    for (let s = 1; s <= 5; s++) {
-      estrellas += `<span onclick="votar(${i}, ${s})" class="star ${voto >= s ? 'active' : ''}">★</span>`;
-    }
+    let voto = parseInt(localStorage.getItem("voto_" + i) || 0);
 
     let comentarios = JSON.parse(localStorage.getItem("comentarios_" + i) || "[]");
 
-    let lista = comentarios.map(c => `<div class="coment">💬 ${c}</div>`).join("");
+    let lista = comentarios.length
+      ? comentarios.map(c => `<div class="coment">💬 ${c}</div>`).join("")
+      : `<div class="coment vacio">Sin comentarios aún</div>`;
 
     tabla.innerHTML += `
       <tr>
-        <td>${d.dia}</td>
+        <td><strong>${d.dia}</strong></td>
         <td>${d.nombre}</td>
-        <td>${estrellas}</td>
+        <td class="stars">
+          ${generarEstrellas(i, voto)}
+        </td>
         <td>
           ${lista}
+
           <div class="inputBox">
-            <input id="c_${i}" placeholder="Comentario">
-            <button onclick="comentar(${i})">+</button>
+            <input id="c_${i}" placeholder="Escribe comentario...">
+            <button onclick="comentar(${i})">Enviar</button>
           </div>
         </td>
       </tr>
@@ -93,8 +109,8 @@ function cargarTabla() {
   });
 }
 
+// ---------- VOTAR (1 por persona, pero modificable) ----------
 function votar(i, v) {
-  if (localStorage.getItem("voto_" + i)) return;
   localStorage.setItem("voto_" + i, v);
   cargarTabla();
   cargarRanking();
@@ -106,36 +122,40 @@ function comentar(i) {
   if (!input.value.trim()) return;
 
   let arr = JSON.parse(localStorage.getItem("comentarios_" + i) || "[]");
-  arr.push(input.value);
+  arr.push(input.value.trim());
 
   localStorage.setItem("comentarios_" + i, JSON.stringify(arr));
+
   input.value = "";
   cargarTabla();
 }
 
-// ---------- RANKING ----------
+// ---------- RANKING (MEDIA REAL) ----------
 function cargarRanking() {
   let r = [];
 
   datos.forEach((d, i) => {
+    let voto = parseInt(localStorage.getItem("voto_" + i) || 0);
+
     r.push({
-      nombre: d.nombre,
       dia: d.dia,
-      voto: parseInt(localStorage.getItem("voto_" + i) || 0)
+      nombre: d.nombre,
+      media: voto
     });
   });
 
-  r.sort((a, b) => b.voto - a.voto);
+  r.sort((a, b) => b.media - a.media);
 
   document.getElementById("ranking").innerHTML =
     r.map(x => `
       <div class="rank">
         <strong>${x.dia} - ${x.nombre}</strong>
-        <span>⭐ ${x.voto}</span>
+        <span>⭐ ${x.media.toFixed(1)}</span>
       </div>
     `).join("");
 }
 
+// INIT
 cargarTabla();
 cargarRanking();
 </script>
