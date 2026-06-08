@@ -10,7 +10,7 @@
 
 <header>
   <h1>🐂 Kuadrilla San Fermín 2026</h1>
-  <p>Votaciones + comentarios en Google Sheets</p>
+  <p>Votaciones y comentarios en tiempo real</p>
 
   <nav>
     <a href="index.html">Calendario</a>
@@ -48,54 +48,43 @@
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7dVbX1ZyXYZ7MWxPTaen2DLsWlTIllVhHnKZcF8QHUE8i-drAY6A5fHY2iZYrPg1P/exec";
 
 const datos = [
-  { dia: "7 de julio", nombre: "TBC" },
-  { dia: "8 de julio", nombre: "TBC" },
-  { dia: "9 de julio", nombre: "TBC" },
-  { dia: "10 de julio", nombre: "TBC" },
-  { dia: "11 de julio", nombre: "TBC" },
-  { dia: "12 de julio", nombre: "TBC" },
-  { dia: "13 de julio", nombre: "TBC" },
-  { dia: "14 de julio", nombre: "TBC" }
+  { dia: "7 de julio", nombre: "Amaia" },
+  { dia: "8 de julio", nombre: "Naj" },
+  { dia: "9 de julio", nombre: "Ander" },
+  { dia: "10 de julio", nombre: "Izas" },
+  { dia: "11 de julio", nombre: "Miren" },
+  { dia: "12 de julio", nombre: "Blanca" },
+  { dia: "13 de julio", nombre: "Sora" },
+  { dia: "14 de julio", nombre: "Uxue" }
 ];
 
 // ---------- ESTRELLAS ----------
-function estrellas(i, actual) {
+function stars(i, actual) {
   let html = "";
   for (let s = 1; s <= 5; s++) {
-    html += `
-      <span class="star ${s <= actual ? 'active' : ''}"
-            onclick="votar(${i}, ${s})">★</span>
-    `;
+    html += `<span class="star ${s <= actual ? 'active' : ''}" onclick="vote(${i}, ${s})">★</span>`;
   }
   return html;
 }
 
 // ---------- TABLA ----------
-function cargarTabla() {
-  const tabla = document.getElementById("tabla");
-  tabla.innerHTML = "";
+function renderTable() {
+  const tbody = document.getElementById("tabla");
+  tbody.innerHTML = "";
 
   datos.forEach((d, i) => {
+    const voto = parseInt(localStorage.getItem("voto_" + i) || 0);
 
-    let voto = parseInt(localStorage.getItem("voto_" + i) || 0);
-
-    let comentarios = JSON.parse(localStorage.getItem("comentarios_" + i) || "[]");
-
-    let lista = comentarios.length
-      ? comentarios.map(c => `<div class="coment">💬 ${c}</div>`).join("")
-      : `<div class="coment vacio">Sin comentarios</div>`;
-
-    tabla.innerHTML += `
+    tbody.innerHTML += `
       <tr>
         <td><strong>${d.dia}</strong></td>
         <td>${d.nombre}</td>
-        <td>${estrellas(i, voto)}</td>
-        <td>
-          ${lista}
-
+        <td>${stars(i, voto)}</td>
+        <td class="comments" id="comments_${i}">
+          Cargando comentarios...
           <div class="inputBox">
-            <input id="c_${i}" placeholder="Comentario...">
-            <button onclick="comentar(${i})">Enviar</button>
+            <input id="input_${i}" placeholder="Comentario...">
+            <button onclick="comment(${i})">Enviar</button>
           </div>
         </td>
       </tr>
@@ -104,88 +93,125 @@ function cargarTabla() {
 }
 
 // ---------- VOTAR ----------
-function votar(i, valor) {
+function vote(i, value) {
 
   if (localStorage.getItem("voto_" + i)) {
     alert("Ya has votado este día");
     return;
   }
 
-  let nombre = prompt("Escribe tu nombre:");
-  if (!nombre) return;
+  const name = prompt("Tu nombre:");
+  if (!name) return;
 
-  localStorage.setItem("voto_" + i, valor);
+  localStorage.setItem("voto_" + i, value);
 
   fetch(GOOGLE_SCRIPT_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       dia: datos[i].dia,
-      usuario: nombre,
+      usuario: name,
       tipo: "voto",
-      valor: valor
+      valor: value
     })
   });
 
-  cargarTabla();
-  cargarRanking();
+  loadRanking();
+  renderTable();
 }
 
 // ---------- COMENTARIOS ----------
-function comentar(i) {
-  const input = document.getElementById("c_" + i);
-  const texto = input.value.trim();
-  if (!texto) return;
+function comment(i) {
+  const input = document.getElementById("input_" + i);
+  const text = input.value.trim();
+  if (!text) return;
 
-  let nombre = prompt("Tu nombre:");
-  if (!nombre) return;
+  const name = prompt("Tu nombre:");
+  if (!name) return;
 
   fetch(GOOGLE_SCRIPT_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       dia: datos[i].dia,
-      usuario: nombre,
+      usuario: name,
       tipo: "comentario",
-      valor: texto
+      valor: text
     })
   });
 
   input.value = "";
+
+  setTimeout(loadComments, 800);
 }
 
-// ---------- RANKING LOCAL ----------
-function cargarRanking() {
-  let r = [];
+// ---------- CARGAR COMENTARIOS GLOBALS ----------
+async function loadComments() {
+  const res = await fetch(GOOGLE_SCRIPT_URL);
+  const data = await res.json();
+
+  const comments = data.filter(x => x.tipo === "comentario");
 
   datos.forEach((d, i) => {
-    let voto = parseInt(localStorage.getItem("voto_" + i) || 0);
+    const el = document.getElementById("comments_" + i);
 
-    r.push({
-      dia: d.dia,
-      nombre: d.nombre,
-      voto
-    });
+    if (!el) return;
+
+    const list = comments
+      .filter(c => c.dia === d.dia)
+      .map(c => `<div class="comment">💬 <b>${c.usuario}</b>: ${c.valor}</div>`)
+      .join("");
+
+    el.innerHTML = `
+      ${list || "<div class='empty'>Sin comentarios</div>"}
+      <div class="inputBox">
+        <input id="input_${i}" placeholder="Comentario...">
+        <button onclick="comment(${i})">Enviar</button>
+      </div>
+    `;
+  });
+}
+
+// ---------- RANKING ----------
+async function loadRanking() {
+  const res = await fetch(GOOGLE_SCRIPT_URL);
+  const data = await res.json();
+
+  const votes = data.filter(x => x.tipo === "voto");
+
+  let ranking = {};
+
+  votes.forEach(v => {
+    if (!ranking[v.dia]) ranking[v.dia] = { total: 0, count: 0, nombre: "" };
+    ranking[v.dia].total += Number(v.valor);
+    ranking[v.dia].count++;
   });
 
-  r.sort((a, b) => b.voto - a.voto);
+  let arr = Object.keys(ranking).map(dia => ({
+    dia,
+    avg: ranking[dia].total / ranking[dia].count
+  }));
+
+  arr.sort((a, b) => b.avg - a.avg);
 
   document.getElementById("ranking").innerHTML =
-    r.map(x => `
+    arr.map(x => `
       <div class="rank">
-        <strong>${x.dia} - ${x.nombre}</strong>
-        <span>⭐ ${x.voto}</span>
+        <strong>${x.dia}</strong>
+        <span>⭐ ${x.avg.toFixed(1)}</span>
       </div>
     `).join("");
 }
 
 // INIT
-cargarTabla();
-cargarRanking();
+renderTable();
+loadComments();
+loadRanking();
+
+setInterval(() => {
+  loadComments();
+  loadRanking();
+}, 5000);
 </script>
 
 </body>
