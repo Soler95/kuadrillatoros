@@ -2,196 +2,240 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Kuadrilla San Fermín 2026</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kuadrilla San Fermín 2026 🐂</title>
+  <link rel="stylesheet" href="style-sanfermin.css">
 </head>
-
 <body>
 
-<header>
-  <h1>🐂 Kuadrilla San Fermín 2026</h1>
-  <p>Votaciones y comentarios en tiempo real</p>
-
-  <nav>
-    <a href="index.html">Calendario</a>
-    <a href="kuadrilla.html">Miembros</a>
-  </nav>
+<header class="header">
+  <div class="header-inner">
+    <div class="header-brand">
+      <span class="header-bull">🐂</span>
+      <div>
+        <h1>Kuadrilla San Fermín 2026</h1>
+        <p>Votaciones y comentarios en tiempo real</p>
+      </div>
+    </div>
+    <nav class="nav">
+      <a href="index.html" class="nav-link active">📅 Meriendas</a>
+      <a href="kuadrilla.html" class="nav-link">👥 Miembros</a>
+    </nav>
+  </div>
 </header>
 
-<div class="container">
+<main class="container">
 
-  <div class="card">
-    <h2>📅 Meriendas (7–14 julio)</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Día</th>
-          <th>Encargado</th>
-          <th>⭐ Voto</th>
-          <th>Comentarios</th>
-        </tr>
-      </thead>
-      <tbody id="tabla"></tbody>
-    </table>
-  </div>
+  <!-- TABLA DE MERIENDAS -->
+  <section class="card">
+    <div class="card-header">
+      <h2>📅 Meriendas 7–14 julio</h2>
+      <p>Vota la merienda de cada día y deja tu comentario</p>
+    </div>
+    <div id="tabla" class="meriendas-grid"></div>
+  </section>
 
-  <div class="card">
-    <h2>🏆 Ranking</h2>
-    <div id="ranking"></div>
-  </div>
+  <!-- RANKING -->
+  <section class="card">
+    <div class="card-header">
+      <h2>🏆 Ranking</h2>
+      <p>Las mejores meriendas según la kuadrilla</p>
+    </div>
+    <div id="ranking" class="ranking-list">
+      <p class="loading">Cargando ranking... ⏳</p>
+    </div>
+  </section>
 
-</div>
+</main>
+
+<footer class="footer">
+  <p>🎉 ¡Gora San Fermín! · 7–14 julio 2026 · Iruña</p>
+</footer>
 
 <script>
-const URL = "https://script.google.com/macros/s/AKfycbwCf1bIr4MgpjOjh5ApWImKeH4XOpVQcLaEXvfR4a1U9nPgIwp83HpMeNgZsoR_5Z7lRg/exec";
+const URL_API = "https://script.google.com/macros/s/AKfycbwCf1bIr4MgpjOjh5ApWImKeH4XOpVQcLaEXvfR4a1U9nPgIwp83HpMeNgZsoR_5Z7lRg/exec";
 
 const datos = [
-  { dia: "7 de julio", nombre: "Amaia" },
-  { dia: "8 de julio", nombre: "Naj" },
-  { dia: "9 de julio", nombre: "Ander" },
-  { dia: "10 de julio", nombre: "Izas" },
-  { dia: "11 de julio", nombre: "Miren" },
-  { dia: "12 de julio", nombre: "Blanca" },
-  { dia: "13 de julio", nombre: "Sora" },
-  { dia: "14 de julio", nombre: "Uxue" }
+  { dia: "7 de julio",  nombre: "Amaia", emoji: "🧁" },
+  { dia: "8 de julio",  nombre: "Naj",   emoji: "🍕" },
+  { dia: "9 de julio",  nombre: "Ander", emoji: "🥐" },
+  { dia: "10 de julio", nombre: "Izas",  emoji: "🧆" },
+  { dia: "11 de julio", nombre: "Miren", emoji: "🥗" },
+  { dia: "12 de julio", nombre: "Blanca",emoji: "🍱" },
+  { dia: "13 de julio", nombre: "Sora",  emoji: "🥪" },
+  { dia: "14 de julio", nombre: "Uxue",  emoji: "🎂" }
 ];
 
-// ---------- RENDER ----------
+/* ── RENDER TARJETAS ── */
 function render() {
-  const tbody = document.getElementById("tabla");
-  tbody.innerHTML = "";
+  const grid = document.getElementById("tabla");
+  grid.innerHTML = "";
 
   datos.forEach((d, i) => {
-
     const voto = localStorage.getItem("voto_" + i) || 0;
-
     let stars = "";
     for (let s = 1; s <= 5; s++) {
-      stars += `<span class="star ${s <= voto ? 'active' : ''}" onclick="vote(${i},${s})">★</span>`;
+      stars += `<span class="star ${s <= voto ? 'active' : ''}" onclick="vote(${i},${s})" title="${s} estrellas">★</span>`;
     }
 
-    tbody.innerHTML += `
-      <tr>
-        <td><b>${d.dia}</b></td>
-        <td>${d.nombre}</td>
-        <td>${stars}</td>
-        <td id="c_${i}">
-          <input id="input_${i}" placeholder="Comentario">
-          <button onclick="comment(${i})">Enviar</button>
-          <div id="list_${i}"></div>
-        </td>
-      </tr>
+    grid.innerHTML += `
+      <div class="merienda-card" id="card_${i}">
+        <div class="merienda-header">
+          <span class="merienda-emoji">${d.emoji}</span>
+          <div>
+            <div class="merienda-dia">${d.dia}</div>
+            <div class="merienda-nombre">${d.nombre}</div>
+          </div>
+        </div>
+        <div class="stars-row">${stars}</div>
+        <div class="avg-display" id="avg_${i}"></div>
+        <div class="comment-section">
+          <div class="comments-list" id="list_${i}"></div>
+          <div class="comment-input">
+            <input id="input_${i}" placeholder="Tu comentario..." maxlength="200">
+            <button onclick="comment(${i})">Enviar 💬</button>
+          </div>
+        </div>
+      </div>
     `;
   });
 }
 
-// ---------- VOTAR ----------
+/* ── VOTAR ── */
 function vote(i, value) {
-
   if (localStorage.getItem("voto_" + i)) {
-    alert("Ya has votado este día");
+    showToast("¡Ya has votado este día! 🗳️");
     return;
   }
 
-  const name = prompt("Tu nombre:");
-  if (!name) return;
+  const name = prompt("¿Cómo te llamas?");
+  if (!name || !name.trim()) return;
 
   localStorage.setItem("voto_" + i, value);
+  render();
 
-  fetch(URL, {
+  fetch(URL_API, {
     method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      dia: datos[i].dia,
-      usuario: name,
-      tipo: "voto",
-      valor: value
-    })
-  });
-
-  load();
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ dia: datos[i].dia, usuario: name.trim(), tipo: "voto", valor: value })
+  }).then(() => {
+    showToast("¡Voto enviado! ⭐".repeat(value).substring(0, 20));
+    load();
+  }).catch(() => showToast("Error al enviar voto 😕"));
 }
 
-// ---------- COMENTAR ----------
+/* ── COMENTAR ── */
 function comment(i) {
-
   const input = document.getElementById("input_" + i);
   const text = input.value.trim();
   if (!text) return;
 
-  const name = prompt("Tu nombre:");
-  if (!name) return;
-
-  fetch(URL, {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      dia: datos[i].dia,
-      usuario: name,
-      tipo: "comentario",
-      valor: text
-    })
-  });
+  const name = prompt("¿Cómo te llamas?");
+  if (!name || !name.trim()) return;
 
   input.value = "";
-  setTimeout(load, 800);
+  input.disabled = true;
+
+  fetch(URL_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ dia: datos[i].dia, usuario: name.trim(), tipo: "comentario", valor: text })
+  }).then(() => {
+    showToast("¡Comentario enviado! 💬");
+    input.disabled = false;
+    setTimeout(load, 600);
+  }).catch(() => {
+    input.disabled = false;
+    showToast("Error al enviar 😕");
+  });
 }
 
-// ---------- CARGAR DATOS ----------
+/* ── CARGAR DATOS ── */
 async function load() {
-
   try {
-    const res = await fetch(URL);
+    const res  = await fetch(URL_API);
     const data = await res.json();
 
     const comments = data.filter(x => x.tipo === "comentario");
-    const votes = data.filter(x => x.tipo === "voto");
+    const votes    = data.filter(x => x.tipo === "voto");
 
-    // COMMENTS
+    /* Comentarios */
     datos.forEach((d, i) => {
       const el = document.getElementById("list_" + i);
       if (!el) return;
-
-      el.innerHTML = comments
-        .filter(c => c.dia === d.dia)
-        .map(c => `<div class="comment">💬 <b>${c.usuario}</b>: ${c.valor}</div>`)
-        .join("");
+      const list = comments.filter(c => c.dia === d.dia);
+      el.innerHTML = list.length
+        ? list.map(c => `<div class="comment"><span class="comment-user">${c.usuario}</span> ${c.valor}</div>`).join("")
+        : '<p class="no-comments">Sé el primero en comentar 👇</p>';
     });
 
-    // RANKING
+    /* Medias por día */
     let map = {};
-
     votes.forEach(v => {
-      if (!map[v.dia]) map[v.dia] = {sum:0,count:0};
-      map[v.dia].sum += Number(v.valor);
-      map[v.dia].count++;
+      if (!map[v.dia]) map[v.dia] = { sum: 0, count: 0 };
+      map[v.dia].sum   += Number(v.valor);
+      map[v.dia].count += 1;
     });
 
+    datos.forEach((d, i) => {
+      const avgEl = document.getElementById("avg_" + i);
+      if (!avgEl) return;
+      if (map[d.dia]) {
+        const avg = (map[d.dia].sum / map[d.dia].count).toFixed(1);
+        const n   = map[d.dia].count;
+        avgEl.innerHTML = `<span class="avg-score">⭐ ${avg}</span><span class="avg-count">${n} voto${n !== 1 ? 's' : ''}</span>`;
+      } else {
+        avgEl.innerHTML = `<span class="avg-none">Sin votos aún</span>`;
+      }
+    });
+
+    /* Ranking */
     let arr = Object.keys(map).map(d => ({
       dia: d,
-      avg: map[d].sum / map[d].count
+      nombre: datos.find(x => x.dia === d)?.nombre || "",
+      emoji:  datos.find(x => x.dia === d)?.emoji  || "🍽️",
+      avg:    map[d].sum / map[d].count,
+      count:  map[d].count
     }));
+    arr.sort((a, b) => b.avg - a.avg);
 
-    arr.sort((a,b)=>b.avg-a.avg);
-
-    document.getElementById("ranking").innerHTML =
-      arr.map(x => `
-        <div class="rank">
-          <b>${x.dia}</b>
-          <span>⭐ ${x.avg.toFixed(1)}</span>
-        </div>
-      `).join("");
+    const medals = ["🥇", "🥈", "🥉"];
+    document.getElementById("ranking").innerHTML = arr.length
+      ? arr.map((x, idx) => `
+          <div class="rank-item ${idx === 0 ? 'rank-first' : ''}">
+            <span class="rank-medal">${medals[idx] || `${idx+1}º`}</span>
+            <span class="rank-emoji">${x.emoji}</span>
+            <div class="rank-info">
+              <strong>${x.dia}</strong>
+              <span>${x.nombre}</span>
+            </div>
+            <div class="rank-score">
+              <span class="rank-avg">⭐ ${x.avg.toFixed(1)}</span>
+              <span class="rank-votes">${x.count} voto${x.count !== 1 ? 's' : ''}</span>
+            </div>
+          </div>
+        `).join("")
+      : '<p class="loading">Aún no hay votos 🗳️</p>';
 
   } catch (e) {
-    console.error("Error cargando datos", e);
+    console.error("Error cargando datos:", e);
   }
 }
 
-// INIT
+/* ── TOAST ── */
+function showToast(msg) {
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.classList.add("show"), 10);
+  setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 300); }, 2500);
+}
+
+/* ── INIT ── */
 render();
 load();
 setInterval(load, 5000);
-
 </script>
 
 </body>
