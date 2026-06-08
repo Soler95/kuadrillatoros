@@ -2,62 +2,81 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Kuadrilla Toros - San Fermine 2026</title>
+  <title>Cuadrilla de Toros - San Fermines</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <header>
-  <h1>🐂 Kuadrilla Toros 2026</h1>
-  <p>¡Fiesta, amigos y encierros!</p>
+  <h1>🐂 Cuadrilla de Toros de San Fermines</h1>
+  <p>Calendario de meriendas con votación ⭐</p>
 </header>
-
-<nav>
-  <a href="#miembros">Miembros</a>
-  <a href="#calendario">Calendario</a>
-</nav>
 
 <div class="container">
 
-  <div class="card" id="miembros">
-    <h2>👥 Miembros de la cuadrilla</h2>
-    <ul>
-      <li>Juan “El Rápido”</li>
-      <li>Miguel “Valentía”</li>
-      <li>Ander “El Toro Humano”</li>
-      <li>Lucas “Sin Miedo”</li>
-      <li>Iker “Sprint final”</li>
-    </ul>
-  </div>
+  <div class="card">
+    <h2>📅 Calendario de meriendas (6–14 julio)</h2>
 
-  <div class="card" id="calendario">
-    <h2>📅 Calendario de actividades</h2>
     <table>
-      <tr>
-        <th>Día</th>
-        <th>Actividad</th>
-      </tr>
-      <tr>
-        <td>6 de julio</td>
-        <td>Reunión y preparación</td>
-      </tr>
-      <tr>
-        <td>7 de julio</td>
-        <td>Encierro + almuerzo</td>
-      </tr>
-      <tr>
-        <td>8 de julio</td>
-        <td>Entrenamiento de carrera</td>
-      </tr>
-      <tr>
-        <td>9 de julio</td>
-        <td>Fiesta nocturna</td>
-      </tr>
+      <thead>
+        <tr>
+          <th>Día</th>
+          <th>Encargado</th>
+          <th>⭐ Votos</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+
+      <tbody id="tabla"></tbody>
+
     </table>
   </div>
 
 </div>
+
+<script>
+const datos = [
+  { dia: "6 de julio", nombre: "Juan El Rápido" },
+  { dia: "7 de julio", nombre: "Miguel Valentía" },
+  { dia: "8 de julio", nombre: "Ander Toro Humano" },
+  { dia: "9 de julio", nombre: "Lucas Sin Miedo" },
+  { dia: "10 de julio", nombre: "Iker Sprint" },
+  { dia: "11 de julio", nombre: "Juan El Rápido" },
+  { dia: "12 de julio", nombre: "Miguel Valentía" },
+  { dia: "13 de julio", nombre: "Ander Toro Humano" },
+  { dia: "14 de julio", nombre: "Lucas Sin Miedo" }
+];
+
+function cargarTabla() {
+  const tabla = document.getElementById("tabla");
+  tabla.innerHTML = "";
+
+  datos.forEach((d, i) => {
+    let votos = localStorage.getItem("voto_" + i) || 0;
+
+    tabla.innerHTML += `
+      <tr>
+        <td>${d.dia}</td>
+        <td>${d.nombre}</td>
+        <td>⭐ ${votos}</td>
+        <td>
+          <button onclick="votar(${i})">👍 Votar</button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+function votar(i) {
+  let votos = parseInt(localStorage.getItem("voto_" + i) || 0);
+  votos++;
+  localStorage.setItem("voto_" + i, votos);
+  cargarTabla();
+}
+
+cargarTabla();
+</script>
 
 </body>
 </html>
